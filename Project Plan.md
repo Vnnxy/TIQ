@@ -1,52 +1,31 @@
 This project might change in future versions.
 
+# Deadlines:
 
+- D2 : 2/12
 
-\# Deadlines:
+  Req 1, Req 2, Req3
 
+- D3 : 16/12
 
+Req 4, Req 6
 
-* D2 : 2/12 
+4 days were added due to the possible complexity of this section of the project.
 
-&nbsp;	Req 1, Req 2, Req3
+- D4 : 6/1
 
-&nbsp;	
+Req 5, Req 6
 
-* D3 : 16/12
-
-&nbsp;	Req 4, Req 6 
-
-&nbsp;	4 days were added due to the possible complexity of this section of the project. 
-
-* D4 :  6/1
-
-&nbsp;	Req 5, Req 6
-
-
-
-
-
-\## Tech stack: 
+## Tech stack:
 
 Java using Spring for the back-end.
 
 Javascript, Bootstrap for the front-end
 
-
-
-
-
-\# Use of AI:
+# Use of AI:
 
 We will not use generative AI in the project.
 
+Generative AI will not be directly fed project code, descriptions of the project, or any other information directly provided by the assignment or database. Generated code won't be used in the code.
 
-
-Generative AI will not be directly fed project code, descriptions of the project, or any other information directly provided by the assignment or database. Generated code won't be used in the code. 
-
-
-
-Personal use of generative AI by developers will be restricted to using it in a search engine-like manner, to search for features of the pipeline that may be useful during development. 
-
-
-
+Personal use of generative AI by developers will be restricted to using it in a search engine-like manner, to search for features of the pipeline that may be useful during development.
