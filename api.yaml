@@ -25,6 +25,22 @@ components:
         merchant_info:
           $ref:  "#/components/schemas/MerchantInfo"
 
+    TransactionSummary:
+      type: object
+      required:
+        - "id"
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        amount:
+          type: number
+        date:
+          type: string
+        merchant_city:
+          type: string
+
+
     MerchantInfo:
       type: object
       properties:
@@ -162,6 +178,14 @@ components:
       in: query
       required: false
       description: Filters by state of the US
+      schema:
+        type: string
+
+    city-filter:
+      name: city
+      in: query
+      required: false
+      description: Filters by city
       schema:
         type: string
 
@@ -335,6 +359,114 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
 
+  /transactions/average:
+    get:
+      tags:
+        - Data Transaction
+      description:
+        Retrieves the average amount per processed transaction (in USD) in a
+        given city per month and year, excluding online transactions.
+
+      summary: Retrieves the average amount.
+      parameters:
+        - $ref: "#/components/parameters/city-filter"
+        - $ref: "#/components/parameters/transaction-filter-month"
+        - $ref: "#/components/parameters/transaction-filter-year"
+
+      responses:
+        "204":
+          description: "Average excluding online transaction"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  average:
+                    type: integer
+                    description: Average in USD
+            text/csv:
+              schema:
+                type: string
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /transactions/total:
+    get:
+      tags:
+        - Data Transaction
+      description:
+        Retrieves the total amount in process transactions (in USD) per day
+        at a given US state and for a given calendar month
+
+      summary: Retrieves the total amount.
+      parameters:
+        - $ref: "#/components/parameters/state-filter"
+        - $ref: "#/components/parameters/transaction-filter-month"
+        - $ref: "#/components/parameters/batch"
+
+      responses:
+        "204":
+          description: "Average excluding online transaction"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total in USD
+            text/csv:
+              schema:
+                type: string
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /transactions/tb:
+    get:
+      tags:
+        - Data Transaction
+      description:
+        Retrieves the top or bottom N maximum transaction amounts
+        across all data either for a specific year or for the previous M years. 
+        You must provide transaction-offset-year or transaction-filter-year,
+        but not both at the same time.
+
+
+
+      summary: Retrieves the top or bottom transactions.
+      parameters:
+        - $ref: "#/components/parameters/order-dir"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/transaction-offset-year"
+        - $ref: "#/components/parameters/transaction-filter-year"
+
+
+      responses:
+        "200":
+          description: "Retrieves top or bottom"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionSummary"
+            text/csv:
+              schema:
+                type: string
+
+        "204":
+          $ref: "#/components/responses/NoResults"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "500":
+          $ref: "#/components/responses/ServerError"
 
 
 
