@@ -215,6 +215,11 @@ paths:
             text/csv:
               schema:
                 type: string
+                description: id,amount,date,client_id,merchant_state,merchant_city
+                example:
+                  id,amount,date,client_id,merchant_state,merchant_city
+                  7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
+                  7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
 
         "204":
           $ref: "#/components/responses/NoResults"
@@ -238,6 +243,11 @@ paths:
           text/csv:
             schema:
               type: string
+              description: id,amount,date,client_id,merchant_state,merchant_city
+              example:
+                id,amount,date,client_id,merchant_state,merchant_city
+                7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
+                7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
 
       responses:
         "201":
@@ -309,6 +319,11 @@ paths:
               text/csv:
                 schema:
                   type: string
+                  description: id,amount,date,client_id,merchant_state,merchant_city
+                  example:
+                    id,amount,date,client_id,merchant_state,merchant_city
+                    7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
+                    7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
 
           "400":
             $ref: "#/components/responses/BadRequest"
@@ -330,6 +345,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Transaction"
+            text/csv:
+              schema:
+                type: string
+                description: id,amount,date,client_id,merchant_state,merchant_city
+                example:
+                  id,amount,date,client_id,merchant_state,merchant_city
+                  7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
+                  7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
         responses:
           "200":
             description: "Transaction updated"
@@ -337,6 +360,14 @@ paths:
               application/json:
                 schema:
                   $ref: "#/components/schemas/Transaction"
+            text/csv:
+              schema:
+                type: string
+                description: id,amount,date,client_id,merchant_state,merchant_city
+                example:
+                  id,amount,date,client_id,merchant_state,merchant_city
+                  7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
+                  7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
           "400":
             $ref: "#/components/responses/BadRequest"
           "404":
@@ -459,6 +490,10 @@ paths:
             text/csv:
               schema:
                 type: string
+                description: id,amount,date,merchant_city
+                example:
+                  id,amount,date,merchant_city
+                  7475324,-77.00,01/01/2010 00:01:00,Beulah
 
         "204":
           $ref: "#/components/responses/NoResults"
