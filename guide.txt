@@ -1,2 +1,0 @@
-﻿run locally with ./mvnw.cmd spring-boot:run
-connect to http://localhost:8080/ to reach index.html
