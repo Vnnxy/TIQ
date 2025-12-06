@@ -33,4 +33,58 @@ public class Merchant {
      * no state will be provided.
      */
     String merchant_state;
+
+    /**
+     * Getter for the identifier of the merchant
+     * 
+     * @return integer representing the id of the merchant.
+     */
+    public Integer getMerchantId() {
+        return merchant_id;
+    }
+
+    /**
+     * Setter for the merchant id.
+     * 
+     * @param merchantId Integer id of the merchant
+     */
+    public void setMerchantId(Integer merchantId) {
+        this.merchant_id = merchantId;
+    }
+
+    /**
+     * Getter for the city where the merchant is located or if it's online.
+     * 
+     * @return The city of the merchant or ONLINE tag.
+     */
+    public String getMerchantCity() {
+        return merchant_city;
+    }
+
+    /**
+     * Setter for the merchant city.
+     * 
+     * @param merchantCity Name of the city or ONLINE.
+     */
+    public void setMerchantCity(String merchantCity) {
+        this.merchant_city = merchantCity;
+    }
+
+    /**
+     * Getter for the merchant state.
+     * 
+     * @return The merchant state.
+     */
+    public String getMerchantState() {
+        return merchant_state;
+    }
+
+    /**
+     * Setter for the geographicak state of the merchant.
+     * 
+     * @param merchantState The state where the merchant is located.
+     */
+    public void setMerchantState(String merchantState) {
+        this.merchant_state = merchantState;
+    }
 }
