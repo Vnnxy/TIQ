@@ -104,7 +104,7 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                                 OFFSET :offset;
                         """, nativeQuery = true)
         List<MaximumAmountDto> getMaximumAmountTop(@Param("start") Integer start, @Param("end") Integer end,
-                        @Param("limit") Integer limit, @Param("offser") Integer offset);
+                        @Param("limit") Integer limit, @Param("offset") Integer offset);
 
         /**
          * Retrieves the bottom maximum transactions for the given parameters.
