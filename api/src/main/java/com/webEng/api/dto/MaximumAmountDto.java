@@ -35,7 +35,7 @@ public class MaximumAmountDto {
      * @param timestamp LocalDateTime object with the timestamp of the transaaction
      * @param location  String with the city or online.
      */
-    public MaximumAmountDto(double maxAmount, LocalDateTime timestamp, String location) {
+    public MaximumAmountDto(LocalDateTime timestamp, double maxAmount, String location) {
         this.timestamp = timestamp;
         this.maxAmount = maxAmount;
         this.location = location;

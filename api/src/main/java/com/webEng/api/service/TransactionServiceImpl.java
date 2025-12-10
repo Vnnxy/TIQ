@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.webEng.api.dto.AvgAmountDto;
 import com.webEng.api.dto.MaximumAmountDto;
 import com.webEng.api.dto.TotalAmountDto;
 import com.webEng.api.exception.ApiException;
@@ -38,15 +39,14 @@ public class TransactionServiceImpl implements TransactionService {
      * @return avg amount
      */
     @Override
-    public Double getAvgAmount(String city, Integer year, Integer month) {
+    public AvgAmountDto getAvgAmount(String city, Integer year, Integer month) {
         if (city == null || year == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "City and Year are required parameters");
         try {
             Double res = repoTransaction.getAvgAmount(city, year, month);
-            if (res == null)
-                throw new ApiException(HttpStatus.NOT_FOUND, "There was no data found");
-            return res;
+            return new AvgAmountDto(res);
         } catch (Exception e) {
+            e.getStackTrace();
             throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Error accessing the database.");
         }
     }
@@ -95,6 +95,7 @@ public class TransactionServiceImpl implements TransactionService {
             else
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid dir parameter");
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Error accessing the database.");
         }
 
