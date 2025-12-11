@@ -3,6 +3,7 @@ package com.webEng.api.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,7 +20,6 @@ import jakarta.validation.constraints.Min;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
-//import javax.validation.constraints.*;
 
 import java.util.List;
 
@@ -27,6 +27,7 @@ import java.util.List;
  * Controller class for the Transactions
  */
 @RestController
+@Validated
 @RequestMapping("/transactions")
 // tag
 public class TransactionController {
@@ -129,7 +130,7 @@ public class TransactionController {
         String contentType = ctn.defineContentType(accept, acceptParam);
         if (contentType.equals("text/csv"))
             return new ResponseEntity<>(csvFormatter.maxAmountToCsv(list), status);
-        return new ResponseEntity<>(list, HttpStatus.OK);
+        return new ResponseEntity<>(list, status);
     }
 
 }

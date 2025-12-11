@@ -92,6 +92,7 @@ public class TransactionServiceImpl implements TransactionService {
                 return repoTransaction.getMaximumAmountBottom(startYear, endYear, limit, offset);
             else if (dir.equalsIgnoreCase("top"))
                 return repoTransaction.getMaximumAmountTop(startYear, endYear, limit, offset);
+            // This case should never happen as there is validation in the controller.
             else
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid dir parameter");
         } catch (Exception e) {

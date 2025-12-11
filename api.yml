@@ -4,7 +4,7 @@ info:
   description: Specification for the Financial Transaction app.
   version: 1.0.0
 servers:
-  - url: 'localhost/'
+  - url: "localhost/8080"
 
 components:
   schemas:
@@ -23,7 +23,7 @@ components:
         client_id:
           type: integer
         merchant_info:
-          $ref:  "#/components/schemas/MerchantInfo"
+          $ref: "#/components/schemas/MerchantInfo"
 
     TransactionSummary:
       type: object
@@ -40,14 +40,13 @@ components:
         merchant_city:
           type: string
 
-
     MerchantInfo:
       type: object
       properties:
-        merchant_state :
-            type : string
+        merchant_state:
+          type: string
         merchant_city:
-            type: string
+          type: string
   responses:
     BadRequest:
       description: Request was not well-formed, see error details
@@ -62,7 +61,6 @@ components:
         text/csv:
           schema:
             type: string
-
 
     NotFound:
       description: Resource not found
@@ -83,7 +81,14 @@ components:
 
     ServerError:
       description: Internal server error. Try again later.
-
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error-messages:
+                type: string
+                description: Server error, try again later
 
     NotAllowed:
       description: This method is not allowed.
@@ -96,7 +101,6 @@ components:
                 type: string
                 description: This method is not supported
   parameters:
-
     order-dir:
       name: order-dir
       in: query
@@ -189,14 +193,12 @@ components:
       schema:
         type: string
 
-
 paths:
   /transactions:
     get:
       tags:
         - Transactions
-      description:
-        Retrieves a list of transactions filtered by the queries.
+      description: Retrieves a list of transactions filtered by the queries.
       summary: Retrieve list of transactions
       parameters:
         - $ref: "#/components/parameters/client-id"
@@ -216,8 +218,7 @@ paths:
               schema:
                 type: string
                 description: id,amount,date,client_id,merchant_state,merchant_city
-                example:
-                  id,amount,date,client_id,merchant_state,merchant_city
+                example: id,amount,date,client_id,merchant_state,merchant_city
                   7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
                   7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
 
@@ -244,8 +245,7 @@ paths:
             schema:
               type: string
               description: id,amount,date,client_id,merchant_state,merchant_city
-              example:
-                id,amount,date,client_id,merchant_state,merchant_city
+              example: id,amount,date,client_id,merchant_state,merchant_city
                 7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
                 7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
 
@@ -270,15 +270,13 @@ paths:
     delete:
       tags:
         - Transactions
-      description:
-        Deletes all available transactions filtered by the queries.
+      description: Deletes all available transactions filtered by the queries.
       summary: Deletes all transactions
       parameters:
         - $ref: "#/components/parameters/client-id"
         - $ref: "#/components/parameters/transaction-filter-month"
         - $ref: "#/components/parameters/transaction-filter-year"
       responses:
-
         "204":
           description: "Deleted successfully"
           content:
@@ -293,54 +291,23 @@ paths:
               schema:
                 type: string
 
-
         "400":
           $ref: "#/components/responses/BadRequest"
 
         "500":
           $ref: "#/components/responses/ServerError"
 
-
   /transactions/{id}:
     parameters:
       - $ref: "#/components/parameters/transaction-id"
     get:
-        tags:
-          - Transactions
-        summary: Retrieves the selected transaction
-        description: Retrieves the transaction with the given id.
-        responses:
-          "200":
-            description: ""
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/Transaction"
-              text/csv:
-                schema:
-                  type: string
-                  description: id,amount,date,client_id,merchant_state,merchant_city
-                  example:
-                    id,amount,date,client_id,merchant_state,merchant_city
-                    7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
-                    7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
-
-          "400":
-            $ref: "#/components/responses/BadRequest"
-
-          "404":
-            $ref: "#/components/responses/NotFound"
-
-          "500":
-            $ref: "#/components/responses/ServerError"
-
-    put:
-        tags:
-          - Transactions
-        summary: Updates a transaction
-        description:  Updates the transaction with the given id.
-        requestBody:
-          required: true
+      tags:
+        - Transactions
+      summary: Retrieves the selected transaction
+      description: Retrieves the transaction with the given id.
+      responses:
+        "200":
+          description: ""
           content:
             application/json:
               schema:
@@ -349,31 +316,57 @@ paths:
               schema:
                 type: string
                 description: id,amount,date,client_id,merchant_state,merchant_city
-                example:
-                  id,amount,date,client_id,merchant_state,merchant_city
+                example: id,amount,date,client_id,merchant_state,merchant_city
                   7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
                   7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
-        responses:
-          "200":
-            description: "Transaction updated"
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/Transaction"
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    put:
+      tags:
+        - Transactions
+      summary: Updates a transaction
+      description: Updates the transaction with the given id.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Transaction"
+          text/csv:
+            schema:
+              type: string
+              description: id,amount,date,client_id,merchant_state,merchant_city
+              example: id,amount,date,client_id,merchant_state,merchant_city
+                7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
+                7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
+      responses:
+        "200":
+          description: "Transaction updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
             text/csv:
               schema:
                 type: string
                 description: id,amount,date,client_id,merchant_state,merchant_city
-                example:
-                  id,amount,date,client_id,merchant_state,merchant_city
+                example: id,amount,date,client_id,merchant_state,merchant_city
                   7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
                   7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
-          "400":
-            $ref: "#/components/responses/BadRequest"
-          "404":
-            $ref: "#/components/responses/NotFound"
-          "500":
-            $ref: "#/components/responses/ServerError"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
     delete:
       tags:
@@ -464,13 +457,10 @@ paths:
     get:
       tags:
         - Data Transaction
-      description:
-        Retrieves the top or bottom N maximum transaction amounts
-        across all data either for a specific year or for the previous M years. 
+      description: Retrieves the top or bottom N maximum transaction amounts
+        across all data either for a specific year or for the previous M years.
         You must provide transaction-offset-year or transaction-filter-year,
         but not both at the same time.
-
-
 
       summary: Retrieves the top or bottom transactions.
       parameters:
@@ -478,7 +468,6 @@ paths:
         - $ref: "#/components/parameters/limit"
         - $ref: "#/components/parameters/transaction-offset-year"
         - $ref: "#/components/parameters/transaction-filter-year"
-
 
       responses:
         "200":
@@ -491,8 +480,7 @@ paths:
               schema:
                 type: string
                 description: id,amount,date,merchant_city
-                example:
-                  id,amount,date,merchant_city
+                example: id,amount,date,merchant_city
                   7475324,-77.00,01/01/2010 00:01:00,Beulah
 
         "204":
@@ -502,7 +490,3 @@ paths:
 
         "500":
           $ref: "#/components/responses/ServerError"
-
-
-
-

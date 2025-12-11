@@ -4,6 +4,7 @@ import com.webEng.api.dto.AvgAmountDto;
 import com.webEng.api.dto.MaximumAmountDto;
 import com.webEng.api.dto.TotalAmountDto;
 import java.util.List;
+import com.webEng.api.exception.*;;
 
 /**
  * Class handling the conversion from json to csv
@@ -50,6 +51,16 @@ public class CsvFormatter {
         for (MaximumAmountDto mad : list) {
             sb.append(mad.getMaxAmount()).append(mad.getTimestamp()).append(mad.getLocation()).append("\n");
         }
+        return sb.toString();
+    }
+
+    public String apiExceptionToCsv(ExceptionResponse response) {
+        StringBuffer sb = new StringBuffer("timestamp,status,error,message,path\n");
+        sb.append(response.getTimestamp()).append(",");
+        sb.append(response.getStatus()).append(",");
+        sb.append(response.getError()).append(",");
+        sb.append(response.getMessage()).append(",");
+        sb.append(response.getPath());
         return sb.toString();
     }
 }
