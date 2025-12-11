@@ -1,0 +1,508 @@
+openapi: 3.1.0
+info:
+  title: Financial Transactions API
+  description: Specification for the Financial Transaction app.
+  version: 1.0.0
+servers:
+  - url: 'localhost/'
+
+components:
+  schemas:
+    Transaction:
+      type: object
+      required:
+        - "id"
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        amount:
+          type: number
+        date:
+          type: string
+        client_id:
+          type: integer
+        merchant_info:
+          $ref:  "#/components/schemas/MerchantInfo"
+
+    TransactionSummary:
+      type: object
+      required:
+        - "id"
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        amount:
+          type: number
+        date:
+          type: string
+        merchant_city:
+          type: string
+
+
+    MerchantInfo:
+      type: object
+      properties:
+        merchant_state :
+            type : string
+        merchant_city:
+            type: string
+  responses:
+    BadRequest:
+      description: Request was not well-formed, see error details
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error-message:
+                type: string
+                description: Error message detailing the problem with the request
+        text/csv:
+          schema:
+            type: string
+
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error-message:
+                type: string
+                description: The origin server did not find a current representation for the target resource
+        text/csv:
+          schema:
+            type: string
+
+    NoResults:
+      description: List Empty. There are no results to return.
+
+    ServerError:
+      description: Internal server error. Try again later.
+
+
+    NotAllowed:
+      description: This method is not allowed.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error-messages:
+                type: string
+                description: This method is not supported
+  parameters:
+
+    order-dir:
+      name: order-dir
+      in: query
+      required: false
+      description: To order up or bottom.
+      schema:
+        type: string
+        enum:
+          - desc
+          - asc
+
+    limit:
+      name: limit
+      in: query
+      required: true
+      description: Limit the number of returned items
+      schema:
+        type: integer
+        maximum: 100
+
+    batch:
+      name: batch
+      in: query
+      required: false
+      description: The number of items to include in a batch
+      schema:
+        type: integer
+        enum:
+          - 10
+          - 20
+          - 50
+          - 100
+
+    transaction-filter-month:
+      name: month
+      in: query
+      required: false
+      description: Filtering the results by calendar month
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 12
+
+    transaction-filter-year:
+      name: year
+      in: query
+      required: false
+      description: Filtering the results by year
+      schema:
+        type: integer
+
+    transaction-offset-year:
+      name: m-previous-years
+      in: query
+      required: false
+      description: Filters for only the previous m years
+      schema:
+        type: integer
+        minimum: 1
+
+    transaction-id:
+      name: id
+      in: path
+      required: true
+      description: The ID of the transaction
+      schema:
+        type: integer
+
+    client-id:
+      name: client-id
+      in: query
+      required: false
+      description: Id of the client
+      schema:
+        type: integer
+
+    state-filter:
+      name: state
+      in: query
+      required: false
+      description: Filters by state of the US
+      schema:
+        type: string
+
+    city-filter:
+      name: city
+      in: query
+      required: false
+      description: Filters by city
+      schema:
+        type: string
+
+
+paths:
+  /transactions:
+    get:
+      tags:
+        - Transactions
+      description:
+        Retrieves a list of transactions filtered by the queries.
+      summary: Retrieve list of transactions
+      parameters:
+        - $ref: "#/components/parameters/client-id"
+        - $ref: "#/components/parameters/transaction-filter-month"
+        - $ref: "#/components/parameters/transaction-filter-year"
+
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+            text/csv:
+              schema:
+                type: string
+                description: id,amount,date,client_id,merchant_state,merchant_city
+                example:
+                  id,amount,date,client_id,merchant_state,merchant_city
+                  7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
+                  7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
+
+        "204":
+          $ref: "#/components/responses/NoResults"
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "500":
+          $ref: "#/components/responses/ServerError"
+    post:
+      tags:
+        - Transactions
+      summary: Create a new Transaction.
+      description: Creates a new transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Transaction"
+          text/csv:
+            schema:
+              type: string
+              description: id,amount,date,client_id,merchant_state,merchant_city
+              example:
+                id,amount,date,client_id,merchant_state,merchant_city
+                7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
+                7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
+
+      responses:
+        "201":
+          description: Transaction successfully created
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: ID of the new transaction
+            text/csv:
+              schema:
+                type: string
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URL of newly created transaction
+        "400":
+          $ref: "#/components/responses/BadRequest"
+    delete:
+      tags:
+        - Transactions
+      description:
+        Deletes all available transactions filtered by the queries.
+      summary: Deletes all transactions
+      parameters:
+        - $ref: "#/components/parameters/client-id"
+        - $ref: "#/components/parameters/transaction-filter-month"
+        - $ref: "#/components/parameters/transaction-filter-year"
+      responses:
+
+        "204":
+          description: "Deleted successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: integer
+                    description: Number of deleted transactions
+            text/csv:
+              schema:
+                type: string
+
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+
+  /transactions/{id}:
+    parameters:
+      - $ref: "#/components/parameters/transaction-id"
+    get:
+        tags:
+          - Transactions
+        summary: Retrieves the selected transaction
+        description: Retrieves the transaction with the given id.
+        responses:
+          "200":
+            description: ""
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Transaction"
+              text/csv:
+                schema:
+                  type: string
+                  description: id,amount,date,client_id,merchant_state,merchant_city
+                  example:
+                    id,amount,date,client_id,merchant_state,merchant_city
+                    7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
+                    7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
+
+          "400":
+            $ref: "#/components/responses/BadRequest"
+
+          "404":
+            $ref: "#/components/responses/NotFound"
+
+          "500":
+            $ref: "#/components/responses/ServerError"
+
+    put:
+        tags:
+          - Transactions
+        summary: Updates a transaction
+        description:  Updates the transaction with the given id.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+            text/csv:
+              schema:
+                type: string
+                description: id,amount,date,client_id,merchant_state,merchant_city
+                example:
+                  id,amount,date,client_id,merchant_state,merchant_city
+                  7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
+                  7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
+        responses:
+          "200":
+            description: "Transaction updated"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Transaction"
+            text/csv:
+              schema:
+                type: string
+                description: id,amount,date,client_id,merchant_state,merchant_city
+                example:
+                  id,amount,date,client_id,merchant_state,merchant_city
+                  7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
+                  7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
+          "400":
+            $ref: "#/components/responses/BadRequest"
+          "404":
+            $ref: "#/components/responses/NotFound"
+          "500":
+            $ref: "#/components/responses/ServerError"
+
+    delete:
+      tags:
+        - Transactions
+      summary: Delete a transaction
+      description: Deletes a transaction given an id.
+      responses:
+        "204":
+          description: "Transaction created"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /transactions/average:
+    get:
+      tags:
+        - Data Transaction
+      description:
+        Retrieves the average amount per processed transaction (in USD) in a
+        given city per month and year, excluding online transactions.
+
+      summary: Retrieves the average amount.
+      parameters:
+        - $ref: "#/components/parameters/city-filter"
+        - $ref: "#/components/parameters/transaction-filter-month"
+        - $ref: "#/components/parameters/transaction-filter-year"
+
+      responses:
+        "204":
+          description: "Average excluding online transaction"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  average:
+                    type: integer
+                    description: Average in USD
+            text/csv:
+              schema:
+                type: string
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /transactions/total:
+    get:
+      tags:
+        - Data Transaction
+      description:
+        Retrieves the total amount in process transactions (in USD) per day
+        at a given US state and for a given calendar month
+
+      summary: Retrieves the total amount.
+      parameters:
+        - $ref: "#/components/parameters/state-filter"
+        - $ref: "#/components/parameters/transaction-filter-month"
+        - $ref: "#/components/parameters/batch"
+
+      responses:
+        "204":
+          description: "Average excluding online transaction"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total in USD
+            text/csv:
+              schema:
+                type: string
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /transactions/tb:
+    get:
+      tags:
+        - Data Transaction
+      description:
+        Retrieves the top or bottom N maximum transaction amounts
+        across all data either for a specific year or for the previous M years. 
+        You must provide transaction-offset-year or transaction-filter-year,
+        but not both at the same time.
+
+
+
+      summary: Retrieves the top or bottom transactions.
+      parameters:
+        - $ref: "#/components/parameters/order-dir"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/transaction-offset-year"
+        - $ref: "#/components/parameters/transaction-filter-year"
+
+
+      responses:
+        "200":
+          description: "Retrieves top or bottom"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionSummary"
+            text/csv:
+              schema:
+                type: string
+                description: id,amount,date,merchant_city
+                example:
+                  id,amount,date,merchant_city
+                  7475324,-77.00,01/01/2010 00:01:00,Beulah
+
+        "204":
+          $ref: "#/components/responses/NoResults"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+
+
+
