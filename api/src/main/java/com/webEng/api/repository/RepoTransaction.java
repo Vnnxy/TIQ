@@ -48,9 +48,6 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
          * Gets the total amount of processed transactions in USD for a given state and
          * month.
          * 
-         * Req:to retrieve the total amount in process transactions (in USD) per day
-         * at a given US state and for a given calendar month, returned in batches of M=
-         * {10, 20, 50, 100};
          * 
          * @param state  Required parameter, String containing the state of the
          *               merchant.
@@ -78,11 +75,6 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
         /**
          * Retrieves the top maximum transactions for the given parameters.
          * 
-         * req:to retrieve the top or bottom N, N ≥1 maximum transaction amounts
-         * across all data either for a specific year or for the previous M, M ≥1 years,
-         * including the information about the specific moment (read: timestamp)
-         * and the city where this transaction took place or whether this transaction
-         * took place online
          * 
          * @param start  Left bound for the year (Inclusive)
          * @param end    Right bound for the year (Inclusive), if its a single year,
@@ -109,11 +101,6 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
         /**
          * Retrieves the bottom maximum transactions for the given parameters.
          * 
-         * req:to retrieve the top or bottom N, N ≥1 maximum transaction amounts
-         * across all data either for a specific year or for the previous M, M ≥1 years,
-         * including the information about the specific moment (read: timestamp)
-         * and the city where this transaction took place or whether this transaction
-         * took place online
          * 
          * @param start  Left bound for the year (Inclusive)
          * @param end    Right bound for the year (Inclusive), if its a single year,
@@ -136,6 +123,6 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                                 OFFSET :offset;
                         """, nativeQuery = true)
         List<MaximumAmountDto> getMaximumAmountBottom(@Param("start") Integer start, @Param("end") Integer end,
-                        @Param("limit") Integer limit, @Param("offser") Integer offset);
+                        @Param("limit") Integer limit, @Param("offset") Integer offset);
 
 }

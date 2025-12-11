@@ -88,9 +88,9 @@ public class TransactionServiceImpl implements TransactionService {
         if (startYear == null || endYear == null || limit == null || dir == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "startYear, endYear, limit and dir are required parameters");
         try {
-            if (dir.equalsIgnoreCase("ASC"))
+            if (dir.equalsIgnoreCase("bottom"))
                 return repoTransaction.getMaximumAmountBottom(startYear, endYear, limit, offset);
-            else if (dir.equalsIgnoreCase("DESC"))
+            else if (dir.equalsIgnoreCase("top"))
                 return repoTransaction.getMaximumAmountTop(startYear, endYear, limit, offset);
             else
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid dir parameter");

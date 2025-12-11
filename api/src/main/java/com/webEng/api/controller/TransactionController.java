@@ -31,22 +31,36 @@ import java.util.List;
 // tag
 public class TransactionController {
 
+    /**
+     * The Transaction service
+     */
     @Autowired
-    TransactionService service;
+    TransactionService transactionService;
 
     ContentTypeNegotiator ctn = new ContentTypeNegotiator();
     CsvFormatter csvFormatter = new CsvFormatter();
 
-    // For now, header>param in priority for data type.
+    /**
+     * GET endpoint, /transaction/average
+     * Header has a higher priority than parameter in Content-type defining.
+     * Header>Param>Default.
+     * 
+     * @param accept      Header (Optional) with the content-type.
+     * @param city        Name of the city.
+     * @param year        Year of the transactions
+     * @param month       Month of the transactions (Optional)
+     * @param acceptParam Optional param that determines the content type.
+     * @return ResponseEntity object with either the DTO or its csv representation.
+     */
+
     @GetMapping(value = "/average")
-    // TODO: add not found or no content.
-    public ResponseEntity<?> getAvgAmount(@RequestHeader(value = "Accept", required = false) String accepts,
+    public ResponseEntity<?> getAvgAmount(@RequestHeader(value = "Accept", required = false) String accept,
             @RequestParam String city, @RequestParam Integer year,
             @RequestParam(required = false) @Min(value = 1, message = "Value must be greater than 0.") @Max(value = 12, message = "month has to be less or equal than 12") Integer month,
-            @RequestParam(required = false, defaultValue = "application/json") String accept) {
+            @RequestParam(required = false) String acceptParam) {
 
-        String contentType = ctn.defineContentType(accepts, accept);
-        AvgAmountDto dto = service.getAvgAmount(city, year, month);
+        String contentType = ctn.defineContentType(accept, acceptParam);
+        AvgAmountDto dto = transactionService.getAvgAmount(city, year, month);
         HttpStatus status = dto.getAvgAmount() == null ? HttpStatus.NO_CONTENT : HttpStatus.OK;
         if (contentType.equals("text/csv")) {
             return new ResponseEntity<>(csvFormatter.avgAmountToCsv(dto),
@@ -55,35 +69,67 @@ public class TransactionController {
         return new ResponseEntity<>(dto, status);
     }
 
-    @GetMapping(value = "/total", produces = { "application/json", "text/csv" })
+    /**
+     * GET endpoint, /transaction/total
+     * 
+     * Header has a higher priority than parameter in Content-type defining.
+     * Header>Param>Default.
+     * 
+     * @param accept      Header (Optional) with the content-type.
+     * @param state       Initials of the State
+     * @param month       Month of the transactions (Optional)
+     * @param batchSize   Size of the batch (Optional)
+     * @param offset      The number of entries we want to skip (Optional)
+     * @param acceptParam Optional param that determines the content type.
+     * @return ResponseEntity object with either the DTO or its csv representation.
+     */
+    @GetMapping(value = "/total")
     public ResponseEntity<?> getTotalAmount(
-            @RequestHeader(value = "Accept", required = false) String accepts, @RequestParam String state,
+            @RequestHeader(value = "Accept", required = false) String accept, @RequestParam String state,
             @RequestParam @Min(value = 1, message = "Value must be greater than 0.") @Max(value = 12, message = "month has to be less or equal than 12") Integer month,
             @RequestParam Integer batchSize, @RequestParam(required = false, defaultValue = "0") Integer offset,
-            @RequestParam(required = false, defaultValue = "application/json") String accept) {
+            @RequestParam(required = false) String acceptParam) {
 
-        String contentType = ctn.defineContentType(accepts, accept);
-        if (month < 1 || month > 12)
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Month has to be between 1 and 12");
-        List<TotalAmountDto> list = service.getTotalAmounts(state, month, batchSize, offset);
+        String contentType = ctn.defineContentType(accept, acceptParam);
+        List<TotalAmountDto> list = transactionService.getTotalAmounts(state, month, batchSize, offset);
         HttpStatus status = list.size() == 0 ? HttpStatus.NO_CONTENT : HttpStatus.OK;
         if (contentType.equals("text/csv"))
             return new ResponseEntity<>(csvFormatter.totalAmountToCsv(list), status);
         return new ResponseEntity<>(list, status);
     }
 
-    @GetMapping(value = "/tb", produces = { "application/json", "text/csv" })
-    public ResponseEntity<List<MaximumAmountDto>> getMaxAmount(
-            @RequestHeader(value = "Accept", required = false) String accepts, @RequestParam Integer startYear,
+    /**
+     * GET endpoint, /transaction/tb
+     * 
+     * Header has a higher priority than parameter in Content-type defining.
+     * Header>Param>Default
+     * 
+     * @param accept      Header (Optional) with the content-type.
+     * @param startYear   Start Year (inclusive)
+     * @param endYear     End Year(Inclusive)
+     * @param limit       Number of entries we want.
+     * @param offset      The number of entries we want to skip (Optional)
+     * @param dir         TOP or BOTTOM, to decide the ordering of the transactions
+     * @param acceptParam Optional param that determines the content type.
+     * @return
+     */
+    @GetMapping(value = "/tb")
+    public ResponseEntity<?> getMaxAmount(
+            @RequestHeader(value = "Accept", required = false) String accept, @RequestParam Integer startYear,
             @RequestParam Integer endYear, @RequestParam Integer limit,
             @RequestParam(required = false, defaultValue = "0") Integer offset,
             @RequestParam String dir,
-            @RequestParam(required = false, defaultValue = "application/json") String accept) {
-        // TODO Change to the top or bottom sorting order.
-        if (!dir.equalsIgnoreCase("ASC") && !dir.equalsIgnoreCase("DESC")) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Please provide a valid ordering param [ASC | DESC]");
+            @RequestParam(required = false) String acceptParam) {
+
+        if (!dir.equalsIgnoreCase("top") && !dir.equalsIgnoreCase("bottom")) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Please provide a valid ordering param [Top | Bottom]");
         }
-        return new ResponseEntity<>(service.getMaxAmount(startYear, endYear, limit, offset, dir), HttpStatus.OK);
+        List<MaximumAmountDto> list = transactionService.getMaxAmount(startYear, endYear, limit, offset, dir);
+        HttpStatus status = list.size() == 0 ? HttpStatus.NO_CONTENT : HttpStatus.OK;
+        String contentType = ctn.defineContentType(accept, acceptParam);
+        if (contentType.equals("text/csv"))
+            return new ResponseEntity<>(csvFormatter.maxAmountToCsv(list), status);
+        return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
 }
