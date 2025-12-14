@@ -34,3 +34,5 @@ build/
 dataset
 
 .DS_Store
+*.csv
+.env
