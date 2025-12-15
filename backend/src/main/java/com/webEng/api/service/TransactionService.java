@@ -14,7 +14,16 @@ import com.webEng.api.dto.*;
  */
 public interface TransactionService {
 
-        /**
+    Transaction getById(Integer id);
+    Transaction save(Transaction transaction); // also update
+
+    void deleteById(Integer id);
+    List<Transaction> findFiltered(Integer clientId, Integer year, Integer month);
+
+    int deleteFiltered(Integer clientId, Integer year, Integer month);
+
+
+    /**
          * Invoques the getAvgAmount method from the repository.
          * 
          * @param city  Name of the city

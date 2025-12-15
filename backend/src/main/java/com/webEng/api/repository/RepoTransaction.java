@@ -125,4 +125,33 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
         List<MaximumAmountDto> getMaximumAmountBottom(@Param("start") Integer start, @Param("end") Integer end,
                         @Param("limit") Integer limit, @Param("offset") Integer offset);
 
+    /** Returns a list of transactions filtered by clientID, year, and month */
+    @Query(value = """ 
+                   SELECT t.*
+                   FROM transaction t
+                   WHERE (:clientId IS NULL OR t.client_id = :clientId)
+                   AND (:year IS NULL OR EXTRACT(YEAR FROM t.date) = :year)
+                   AND (:month IS NULL OR EXTRACT(MONTH FROM t.date) = :month)
+               """, nativeQuery = true)
+    List<Transaction> findFiltered(
+            @Param("clientId") Integer clientId,
+            @Param("year") Integer year,
+            @Param("month") Integer month);
+
+    /** Delete all transactions that match the parameter filters */
+    @Modifying
+    @Transactional
+    @Query(value = """ 
+                   DELETE FROM transaction
+                   WHERE (:clientId IS NULL OR client_id = :clientId)
+                   AND (:year IS NULL OR EXTRACT(YEAR FROM date) = :year)
+                   AND (:month IS NULL OR EXTRACT(MONTH FROM date) = :month)
+               """, nativeQuery = true)
+    int deleteFiltered(
+            @Param("clientId") Integer clientId,
+            @Param("year") Integer year,
+            @Param("month") Integer month);
+
+    // findByID, save, deleteById inhereted from JpaRepository / CrudRepository
+
 }

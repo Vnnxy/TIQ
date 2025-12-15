@@ -3,7 +3,6 @@ package com.webEng.api.service;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.webEng.api.dto.AvgAmountDto;
@@ -12,12 +11,11 @@ import com.webEng.api.dto.TotalAmountDto;
 import com.webEng.api.exception.ApiException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 
 import com.webEng.api.model.Transaction;
+import com.webEng.api.model.Merchant;
 import com.webEng.api.repository.RepoTransaction;
-import com.webEng.api.dto.MaximumAmountDto;
-import com.webEng.api.dto.TotalAmountDto;
+import com.webEng.api.repository.RepoMerchant;
 
 /**
  * @author Miguel Akira López Asano
@@ -29,6 +27,9 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
     RepoTransaction repoTransaction;
+
+    @Autowired
+    RepoMerchant repoMerchant;
 
     /**
      * Invoques the getAvgAmount method from the repository.
@@ -101,4 +102,73 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
     }
+
+    /** Retrieve transaction by ID */
+    @Override // the deprecated JpaRepository function
+    public Transaction getById(Integer id)
+    {
+        if (id == null)
+            throw new ApiException(HttpStatus.BAD_REQUEST, "id is a required field");
+        return repoTransaction.findById(id)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Transaction not found with id = " + id));
+    }
+
+    /** Create or update a transaction */
+    @Override
+    public Transaction save(Transaction transaction)
+    {
+        if (transaction == null || transaction.getClientId() == null
+                || transaction.getAmount() == null || transaction.getDate() == null)
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Missing data");
+
+        try
+        {
+            // fetch merchant entity id
+            Integer merchantId = transaction.getMerchant().getId();
+            Merchant merchant = repoMerchant.findById(merchantId)
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Merchant not found"));
+
+            transaction.setMerchant(merchant);
+            return repoTransaction.save(transaction);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error while saving transaction");
+        }
+    }
+
+    /** Delete transaction by ID */
+    @Override
+    public void deleteById(Integer id)
+    {
+        if (id == null)
+            throw new ApiException(HttpStatus.BAD_REQUEST, "id is a required parameter");
+        if (!repoTransaction.existsById(id))
+            throw new ApiException(HttpStatus.NOT_FOUND, "Transaction not found with id = " + id);
+        try
+        {
+            repoTransaction.deleteById(id);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error while deleting transactions");
+        }
+    }
+
+    /** Filter transactions */
+    @Override
+    public List<Transaction> findFiltered(Integer clientId, Integer year, Integer month)
+    {
+        return repoTransaction.findFiltered(clientId, year, month);
+    }
+
+    /** Delete filtered transactions */
+    @Override
+    public int deleteFiltered(Integer clientId, Integer year, Integer month)
+    {
+        return repoTransaction.deleteFiltered(clientId, year, month);
+    }
+
 }

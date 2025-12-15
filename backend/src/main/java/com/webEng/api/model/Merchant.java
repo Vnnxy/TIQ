@@ -39,7 +39,7 @@ public class Merchant {
      * 
      * @return integer representing the id of the merchant.
      */
-    public Integer getMerchantId() {
+    public Integer getId() {
         return merchant_id;
     }
 
@@ -48,7 +48,7 @@ public class Merchant {
      * 
      * @param merchantId Integer id of the merchant
      */
-    public void setMerchantId(Integer merchantId) {
+    public void setId(Integer merchantId) {
         this.merchant_id = merchantId;
     }
 
