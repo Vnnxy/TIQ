@@ -166,9 +166,16 @@ public class TransactionServiceImpl implements TransactionService {
 
     /** Delete filtered transactions */
     @Override
-    public int deleteFiltered(Integer clientId, Integer year, Integer month)
+    public List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month)
     {
-        return repoTransaction.deleteFiltered(clientId, year, month);
+        var transactions = repoTransaction.findFiltered(clientId, year, month);
+        repoTransaction.deleteFiltered(clientId, year, month);
+        return transactions;
+    }
+
+    public boolean existsById(Integer id)
+    {
+        return repoTransaction.existsById(id);
     }
 
 }

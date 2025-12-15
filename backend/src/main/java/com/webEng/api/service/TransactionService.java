@@ -20,7 +20,7 @@ public interface TransactionService {
     void deleteById(Integer id);
     List<Transaction> findFiltered(Integer clientId, Integer year, Integer month);
 
-    int deleteFiltered(Integer clientId, Integer year, Integer month);
+    List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month);
 
 
     /**
@@ -58,5 +58,7 @@ public interface TransactionService {
          */
         public List<MaximumAmountDto> getMaxAmount(Integer startYear, Integer endYear, Integer limit,
                         Integer offset, String dir);
+
+    boolean existsById(Integer id);
 
 }

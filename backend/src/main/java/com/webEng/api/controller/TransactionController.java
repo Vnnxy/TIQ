@@ -168,24 +168,27 @@ public class TransactionController {
             @Valid @RequestBody Transaction transaction
     )
     {
+        if (!transactionService.existsById(id))
+            return ResponseEntity.notFound().build();
+
         transaction.setId(id);
         Transaction updated = transactionService.save(transaction);
-
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(
+    public ResponseEntity<Transaction> deleteById(
             @PathVariable Integer id
     )
     {
+        var deleted = transactionService.getById(id);
         transactionService.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(deleted);
     }
 
     @GetMapping
     public ResponseEntity<List<?>> findFiltered(
-            @RequestParam(required = false) Integer clientId,
+            @RequestParam(required = false) Integer clientid,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month
     )
@@ -195,21 +198,22 @@ public class TransactionController {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid month");
         }
 
-        List<Transaction> list = transactionService.findFiltered(clientId, year, month);
+        var list = transactionService.findFiltered(clientid, year, month);
         HttpStatus status = list.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK;
 
         return new ResponseEntity<>(list, status);
     }
 
     @DeleteMapping
-    public ResponseEntity<Integer> deleteFiltered(
-            @RequestParam(required = false) Integer clientId,
+    public ResponseEntity<List<?>> deleteFiltered(
+            @RequestParam(required = false) Integer clientid,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month
     )
     {
-        int deleteCount = transactionService.deleteFiltered(clientId, year, month);
-        return ResponseEntity.ok(deleteCount);
+        var list = transactionService.deleteFiltered(clientid, year, month);
+        HttpStatus status = list.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK;
+        return new ResponseEntity<>(list, status);
     }
 
 
