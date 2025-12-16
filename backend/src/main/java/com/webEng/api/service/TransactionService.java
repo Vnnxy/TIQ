@@ -18,9 +18,9 @@ public interface TransactionService {
     Transaction save(Transaction transaction); // also update
 
     void deleteById(Integer id);
-    List<Transaction> findFiltered(Integer clientId, Integer year, Integer month);
+    List<Transaction> findFiltered(Integer clientId, Integer year, Integer month, Integer limit);
 
-    List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month);
+    List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit);
 
 
     /**

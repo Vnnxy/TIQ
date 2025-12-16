@@ -2,13 +2,7 @@ package com.webEng.api.model;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 /**
  * @author Miguel Akira López Asano
@@ -29,7 +23,8 @@ public class Transaction {
      * Merchant data
      * This represents the foreign key that references to the merchant table.
      */
-    @ManyToOne
+    // @JsonIgnore // An option if we want to never load merchant data in transaction calls
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "merchant_id")
     Merchant merchant;
 

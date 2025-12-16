@@ -159,17 +159,17 @@ public class TransactionServiceImpl implements TransactionService {
 
     /** Filter transactions */
     @Override
-    public List<Transaction> findFiltered(Integer clientId, Integer year, Integer month)
+    public List<Transaction> findFiltered(Integer clientId, Integer year, Integer month, Integer limit)
     {
-        return repoTransaction.findFiltered(clientId, year, month);
+        return repoTransaction.findFiltered(clientId, year, month, limit);
     }
 
     /** Delete filtered transactions */
     @Override
-    public List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month)
+    public List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit)
     {
-        var transactions = repoTransaction.findFiltered(clientId, year, month);
-        repoTransaction.deleteFiltered(clientId, year, month);
+        var transactions = repoTransaction.findFiltered(clientId, year, month, limit);
+        repoTransaction.deleteFiltered(clientId, year, month, limit);
         return transactions;
     }
 

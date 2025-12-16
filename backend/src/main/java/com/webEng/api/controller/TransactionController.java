@@ -190,7 +190,8 @@ public class TransactionController {
     public ResponseEntity<List<?>> findFiltered(
             @RequestParam(required = false) Integer clientid,
             @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false, defaultValue = "100") Integer limit
     )
     {
         if (month != null && (month < 1 || month > 12))
@@ -198,7 +199,7 @@ public class TransactionController {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid month");
         }
 
-        var list = transactionService.findFiltered(clientid, year, month);
+        var list = transactionService.findFiltered(clientid, year, month, limit);
         HttpStatus status = list.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK;
 
         return new ResponseEntity<>(list, status);
@@ -208,10 +209,11 @@ public class TransactionController {
     public ResponseEntity<List<?>> deleteFiltered(
             @RequestParam(required = false) Integer clientid,
             @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false, defaultValue = "100") Integer limit
     )
     {
-        var list = transactionService.deleteFiltered(clientid, year, month);
+        var list = transactionService.deleteFiltered(clientid, year, month, limit);
         HttpStatus status = list.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK;
         return new ResponseEntity<>(list, status);
     }
