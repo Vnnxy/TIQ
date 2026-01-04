@@ -54,12 +54,18 @@ public class CsvFormatter {
         return sb.toString();
     }
 
+    /**
+     * Formats the exceptions to csv representation.
+     * 
+     * @param response The exception we want to format
+     * @return Csv representation of the exception
+     */
     public String apiExceptionToCsv(ExceptionResponse response) {
         StringBuffer sb = new StringBuffer("timestamp,status,error,message,path\n");
         sb.append(response.getTimestamp()).append(",");
         sb.append(response.getStatus()).append(",");
         sb.append(response.getError()).append(",");
-        sb.append(response.getMessage()).append(",");
+        sb.append(response.getMessage()).append(",2");
         sb.append(response.getPath());
         return sb.toString();
     }

@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
+import java.net.http.HttpResponse;
 import java.util.List;
 
 /**
@@ -119,7 +120,7 @@ public class TransactionController {
      * @param offset      The number of entries we want to skip (Optional)
      * @param dir         TOP or BOTTOM, to decide the ordering of the transactions
      * @param acceptParam Optional param that determines the content type.
-     * @return
+     * @return ResponseEntity object with either the DTO or its csv representation.
      */
     @GetMapping(value = "/tb")
     public ResponseEntity<?> getMaxAmount(
@@ -140,24 +141,29 @@ public class TransactionController {
         return new ResponseEntity<>(list, status);
     }
 
-    @GetMapping(value = "/{id}", produces = {"application/json", "text/csv"})
-    public ResponseEntity<?> getById(
-            @PathVariable Integer id
-    )
-    {
+    /**
+     * GET endpoint for /transactions/{id}
+     * 
+     * Retrieves a specific transaction.
+     * 
+     * @param id Id of the transaction we want to retrieve.
+     * @return ResponseEntity object with either the DTO or its csv representation.
+     */
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<?> getById(@RequestHeader(value = "Accept", required = false) String accept,
+            @PathVariable Integer id, @RequestParam(required = false) String acceptParam) {
+        String contentType = ctn.defineContentType(accept, acceptParam);
         Transaction tx = transactionService.getById(id);
+        HttpStatus status = tx == null ? HttpStatus.NO_CONTENT : HttpStatus.OK;
 
-        if (tx == null)
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok(tx);
+        if (contentType.equals("text/csv"))
+            return new ResponseEntity<>(tx, status);// to csv
+        return new ResponseEntity<>(tx, status);
     }
 
     @PostMapping
     public ResponseEntity<?> create(
-            @Valid @RequestBody Transaction transaction
-    )
-    {
+            @Valid @RequestBody Transaction transaction) {
         Transaction saved = transactionService.save(transaction);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
@@ -165,9 +171,7 @@ public class TransactionController {
     @PutMapping("/{id}")
     public ResponseEntity<?> update(
             @PathVariable Integer id,
-            @Valid @RequestBody Transaction transaction
-    )
-    {
+            @Valid @RequestBody Transaction transaction) {
         if (!transactionService.existsById(id))
             return ResponseEntity.notFound().build();
 
@@ -178,9 +182,7 @@ public class TransactionController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Transaction> deleteById(
-            @PathVariable Integer id
-    )
-    {
+            @PathVariable Integer id) {
         var deleted = transactionService.getById(id);
         transactionService.deleteById(id);
         return ResponseEntity.ok(deleted);
@@ -188,18 +190,15 @@ public class TransactionController {
 
     @GetMapping
     public ResponseEntity<List<?>> findFiltered(
-            @RequestParam(required = false) Integer clientid,
+            @RequestParam(required = false) Integer clientId,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month,
-            @RequestParam(required = false, defaultValue = "100") Integer limit
-    )
-    {
-        if (month != null && (month < 1 || month > 12))
-        {
+            @RequestParam(required = false, defaultValue = "100") Integer limit) {
+        if (month != null && (month < 1 || month > 12)) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid month");
         }
 
-        var list = transactionService.findFiltered(clientid, year, month, limit);
+        var list = transactionService.findFiltered(clientId, year, month, limit);
         HttpStatus status = list.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK;
 
         return new ResponseEntity<>(list, status);
@@ -207,16 +206,13 @@ public class TransactionController {
 
     @DeleteMapping
     public ResponseEntity<List<?>> deleteFiltered(
-            @RequestParam(required = false) Integer clientid,
+            @RequestParam(required = false) Integer clientId,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month,
-            @RequestParam(required = false, defaultValue = "100") Integer limit
-    )
-    {
-        var list = transactionService.deleteFiltered(clientid, year, month, limit);
+            @RequestParam(required = false, defaultValue = "100") Integer limit) {
+        var list = transactionService.deleteFiltered(clientId, year, month, limit);
         HttpStatus status = list.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK;
         return new ResponseEntity<>(list, status);
     }
-
 
 }
