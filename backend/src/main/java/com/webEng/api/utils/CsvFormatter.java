@@ -4,7 +4,8 @@ import com.webEng.api.dto.AvgAmountDto;
 import com.webEng.api.dto.MaximumAmountDto;
 import com.webEng.api.dto.TotalAmountDto;
 import java.util.List;
-import com.webEng.api.exception.*;;
+import com.webEng.api.exception.*;
+import com.webEng.api.model.Merchant;;
 
 /**
  * Class handling the conversion from json to csv
@@ -65,8 +66,38 @@ public class CsvFormatter {
         sb.append(response.getTimestamp()).append(",");
         sb.append(response.getStatus()).append(",");
         sb.append(response.getError()).append(",");
-        sb.append(response.getMessage()).append(",2");
+        sb.append(response.getMessage()).append(",");
         sb.append(response.getPath());
+        return sb.toString();
+    }
+
+    /**
+     * Formats merchants into csv
+     * 
+     * @param merchant The merchant to format
+     * @return Formatted string in csv representation.
+     */
+    public String merchantToCsv(Merchant merchant) {
+        StringBuffer sb = new StringBuffer("merchant_id,merchant_city,merchant_state\n");
+        sb.append(merchant.getId()).append(",");
+        sb.append(merchant.getMerchantCity()).append(",");
+        sb.append(merchant.getMerchantState());
+        return sb.toString();
+    }
+
+    /**
+     * Formats a list of merchants into csv
+     * 
+     * @param merchants List containing merchants
+     * @return Formatted string in csv.
+     */
+    public String merchantListToCsv(List<Merchant> merchants) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("merchant_id,merchant_city,merchant_state\n");
+        for (Merchant merchant : merchants) {
+            sb.append(merchant.getId()).append(",").append(merchant.getMerchantCity()).append(",")
+                    .append(merchant.getMerchantState()).append("\n");
+        }
         return sb.toString();
     }
 }
