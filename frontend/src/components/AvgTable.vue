@@ -13,6 +13,7 @@
 <script setup>
 import { computed } from 'vue'
 
+// Properties for the result.
 const props = defineProps({
   result: {
     type: Object,
@@ -21,8 +22,9 @@ const props = defineProps({
   loading: Boolean,
 })
 
+// Format when there is no data.
 const formattedAvg = computed(() => {
-  if (!props.result?.avgAmount) return '-'
+  if (!props.result?.avgAmount) return 'No data found'
   return `$${props.result.avgAmount}`
 })
 </script>

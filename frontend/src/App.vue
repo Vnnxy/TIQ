@@ -15,11 +15,6 @@
           to="/transactions/data"
           link
         />
-        <v-list-item
-          title="Merchants"
-          to="/merchants"
-          link
-        />
       </v-list>
     </v-navigation-drawer>
 

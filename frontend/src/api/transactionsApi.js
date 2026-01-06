@@ -14,8 +14,13 @@ const axiosClient = axios.create({
  */
 export async function getTransactionAverage(params) {
     try {
-        const { data } = await axiosClient.get(`/average`, { params })
-        return [null, data]
+        const response = await axiosClient.get('/average', { params })
+
+        if (!response.data || response.data === '') {
+            return [null, null]
+        }
+
+        return [null, response.data]
     }
     catch (e) {
         return [e]
@@ -48,7 +53,11 @@ export async function getTransactionTB(params) {
     }
 }
 
-
+/**
+ * Consumes the /Transactions endpoint. Returns multiple transactions.
+ * @param  params Client id, month, year
+ * @returns Array of transactions
+ */
 export async function getTransactions(params) {
     try {
         const { data } = await axiosClient.get(``, { params })
@@ -59,6 +68,11 @@ export async function getTransactions(params) {
     }
 }
 
+/**
+ * Consumes the /Transactions endpoint. Deletes multiple transactions.
+ * @param params Client id, month, year
+ * @returns deleted data
+ */
 export async function deleteTransactions(params) {
     try {
         const { data } = await axiosClient.delete(``, { params })
@@ -68,7 +82,11 @@ export async function deleteTransactions(params) {
         return [e]
     }
 }
-
+/**
+ * Consumes the Transactions/{id} endpoint. Retrieves a single transaction
+ * @param  id Transaction id
+ * @returns A transaction or null.
+ */
 export async function getTransaction(id) {
     try {
         const { data } = await axiosClient.get(`/${id}`)
@@ -78,7 +96,11 @@ export async function getTransaction(id) {
         return [e]
     }
 }
-
+/**
+ * Consumes the Transactions/{id} endpoint. Deletes a single transaction
+ * @param  id Transaction id
+ * @returns A transaction or null.
+ */
 export async function deleteTransaction(id) {
     try {
         const { data } = await axiosClient.delete(`/${id}`)
@@ -88,7 +110,11 @@ export async function deleteTransaction(id) {
         return [e]
     }
 }
-
+/**
+ * Consumes the Transactions/{id} endpoint. Creates a single transaction
+ * @param  id Transaction id
+ * @returns A transaction or null.
+ */
 export async function postTransaction(params) {
     try {
         const { data } = await axiosClient.post('', params)
@@ -98,7 +124,11 @@ export async function postTransaction(params) {
         return [e, null]
     }
 }
-
+/**
+ * Consumes the Transactions/{id} endpoint. Updates a single transaction
+ * @param  id Transaction id
+ * @returns A transaction or null.
+ */
 export async function putTransaction(id, params) {
     try {
         const { data } = await axiosClient.put(`/${id}`, params)

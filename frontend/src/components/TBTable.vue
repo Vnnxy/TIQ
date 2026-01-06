@@ -22,6 +22,7 @@
 </template>
 
 <script setup>
+  // Properties for the table
 defineProps({
   result: Array,
   loading: Boolean,

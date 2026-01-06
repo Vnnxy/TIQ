@@ -6,12 +6,14 @@
       </v-card-title>
 
       <v-card-text>
-        <v-row>
+        <v-form ref="inputRef">
+          <v-row>
           <v-col cols="12" md="6">
             <v-text-field
               v-model.number="form.amount"
               label="Amount"
               type="number"
+              :rules="[rules.required]"
               required
             />
           </v-col>
@@ -21,6 +23,7 @@
               v-model.number="form.clientId"
               label="Client ID"
               type="number"
+              :rules="[rules.required]"
               required
             />
           </v-col>
@@ -30,6 +33,7 @@
               v-model="form.date"
               label="Date"
               type="datetime-local"
+              :rules="[rules.required]"
               required
             />
           </v-col>
@@ -39,10 +43,12 @@
               v-model.number="form.merchantId"
               label="Merchant ID"
               type="number"
+              :rules="[rules.required]"
               required
             />
           </v-col>
         </v-row>
+        </v-form>
       </v-card-text>
 
       <v-card-actions>
@@ -67,6 +73,7 @@
 import { ref, watch, computed } from 'vue'
 import { postTransaction, putTransaction } from '@/api/transactionsApi'
 
+// Table properties
 const props = defineProps({
   modelValue: Boolean,
   transaction: {
@@ -79,7 +86,9 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const dialog = ref(props.modelValue)
 const saving = ref(false)
+const inputRef = ref(null)
 
+// Params
 const form = ref({
   id: null,
   amount: null,
@@ -88,11 +97,15 @@ const form = ref({
   merchantId: null
 })
 
-// Sync dialog with parent
+//Validation rules
+const rules = {
+    required: value => !!value || 'Field is required',
+  }
+
+// Uses watch to open dialogs and renders the desired form version.
 watch(() => props.modelValue, (newVal) => {
   dialog.value = newVal
   
-  // Load transaction data if editing
   if (newVal && props.transaction) {
     form.value = {
       id: props.transaction.id,
@@ -106,19 +119,22 @@ watch(() => props.modelValue, (newVal) => {
     resetForm()
   }
 })
-
+// Used for closing/ending an operation and notifying the TransactionPage
 watch(dialog, (newVal) => {
   emit('update:modelValue', newVal)
 })
 
+// Flag that indicates if its editing or adding. True if editting, false id adding.
 const isEdit = computed(() => !!props.transaction?.id)
 
+// Date formatting
 function formatDateForInput(dateString) {
   if (!dateString) return ''
   
   return dateString.slice(0, 16)
 }
 
+// Resets form to empty values
 function resetForm() {
   form.value = {
     id: null,
@@ -128,22 +144,27 @@ function resetForm() {
     merchantId: null
   }
 }
-
+/**
+ * Handles saving by either Posting or Putting
+ */
 async function save() {
+  // Input validation
+  const { valid } = await inputRef.value.validate()
+    if (!valid) return
   saving.value = true
   
   try {
-    // Prepare payload
     const payload = {
       amount: form.value.amount,
       clientId: form.value.clientId,
-      date: form.value.date ? form.value.date + ':00' : null, // Add seconds
+      date: form.value.date ? form.value.date + ':00' : null, 
+      // DTO workaround
       merchant: {
         id: form.value.merchantId  
       }
     }
 
-   
+   // We decide based on isEdit flag
     const [err, data] = isEdit.value
       ? await putTransaction(form.value.id, payload)
       : await postTransaction(payload)
@@ -163,7 +184,7 @@ async function save() {
     saving.value = false
   }
 }
-
+// Closes the dialog when an error occurs
 function close() {
   dialog.value = false
   resetForm()
