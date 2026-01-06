@@ -38,7 +38,7 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                         FROM transaction t
                         JOIN merchant m
                             ON t.merchant_id = m.merchant_id
-                        WHERE m.merchant_city = :city
+                        WHERE m.merchant_city ILIKE :city
                           AND EXTRACT(YEAR FROM t.date) = :year
                           AND (:month IS NULL OR EXTRACT(MONTH FROM t.date) = :month)
                         """, nativeQuery = true)
@@ -62,7 +62,7 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                         FROM transaction
                         JOIN merchant
                                 ON transaction.merchant_id = merchant.merchant_id
-                        WHERE merchant_state = :state
+                        WHERE merchant_state ILIKE :state
                                 AND EXTRACT(MONTH FROM transaction.date) = :month
                         GROUP BY DATE(transaction.date)
                         ORDER BY day
