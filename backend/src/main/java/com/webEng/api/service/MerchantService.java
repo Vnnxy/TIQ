@@ -25,9 +25,12 @@ public interface MerchantService {
     /**
      * Gets all merchants
      * 
+     * @param limit The limit of merchants
+     * @param page  page we start on
+     * 
      * @return List containing all merchants
      */
-    List<Merchant> getMerchants();
+    List<Merchant> getMerchants(Integer limit, Integer page);
 
     /**
      * Updates a merchant

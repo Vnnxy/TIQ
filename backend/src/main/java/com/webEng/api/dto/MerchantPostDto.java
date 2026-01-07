@@ -1,27 +1,33 @@
-package com.webEng.api.model;
+package com.webEng.api.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.persistence.GenerationType;
 
 /**
  * @author Miguel Akira López Asano
- *         Java class for the merchant information.
  * 
+ *         Class for the Dto used for creating a Merchant
+ *         This is required because we are using save method from JPA, which
+ *         acts as a put if id is present. Therefore, to avoid dangerous
+ *         behaviour, we use this DTO to never send an ID when doing POST.
  */
-@Entity
-@Table(name = "merchant")
-public class Merchant {
+public class MerchantPostDto {
 
     /**
-     * Unique identifier for the merchant
+     * EMpty constructor
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer merchant_id;
+    public MerchantPostDto() {
+    }
+
+    /**
+     * Constructor
+     * 
+     * @param merchantCity  City of the merchant
+     * @param merchantState State of the merchant
+     */
+    public MerchantPostDto(String merchantCity, String merchantState) {
+        this.merchant_city = merchantCity;
+        this.merchant_state = merchantState;
+    }
 
     /**
      * City where the merchant is based on. If the transaaction was ONLINE,
@@ -36,24 +42,6 @@ public class Merchant {
      */
     @NotBlank(message = "State is required")
     String merchant_state;
-
-    /**
-     * Getter for the identifier of the merchant
-     * 
-     * @return integer representing the id of the merchant.
-     */
-    public Integer getId() {
-        return merchant_id;
-    }
-
-    /**
-     * Setter for the merchant id.
-     * 
-     * @param merchantId Integer id of the merchant
-     */
-    public void setId(Integer merchantId) {
-        this.merchant_id = merchantId;
-    }
 
     /**
      * Getter for the city where the merchant is located or if it's online.

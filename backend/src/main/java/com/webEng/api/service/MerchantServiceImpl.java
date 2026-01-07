@@ -3,8 +3,10 @@ package com.webEng.api.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Sort;
 
 import com.webEng.api.exception.ApiException;
 import com.webEng.api.model.Merchant;
@@ -43,11 +45,14 @@ public class MerchantServiceImpl implements MerchantService {
     /**
      * Gets all merchants
      * 
+     * @param limit The limit of merchants
+     * @param page  page we start on
+     * 
      * @return List containing all merchants
      */
     @Override
-    public List<Merchant> getMerchants() {
-        return repoMerchant.findAll();
+    public List<Merchant> getMerchants(Integer limit, Integer page) {
+        return repoMerchant.findAll(PageRequest.of(page, limit, Sort.by("id").ascending())).getContent();
     }
 
     /**

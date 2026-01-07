@@ -4,9 +4,11 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.webEng.api.controller.ContentTypeNegotiator;
 import com.webEng.api.utils.CsvFormatter;
@@ -91,6 +93,13 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Method to handle the error message for missing params
+     * 
+     * @param exception The exception thrown
+     * @param req       The request where we get the accept type.
+     * @return The corresponding exception message.
+     */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     protected ResponseEntity<?> handleMissingServletRequestParameterException(
             MissingServletRequestParameterException exception, HttpServletRequest req) {
@@ -105,6 +114,65 @@ public class ApiExceptionHandler {
         response.setError(HttpStatus.BAD_REQUEST);
         response.setMessage("Missing required parameter: " + exception.getParameterName() + " of type: "
                 + exception.getParameterType());
+        response.setPath(req.getRequestURI());
+
+        if ("text/csv".equals(contentType)) {
+            String csv = csvFormatter.apiExceptionToCsv(response);
+            return new ResponseEntity<>(csv, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Method to handle the error message for missing params
+     * 
+     * @param exception The exception thrown
+     * @param req       The request where we get the accept type.
+     * @return The corresponding exception message.
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    protected ResponseEntity<?> handleMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException exception, HttpServletRequest req) {
+
+        String accept = req.getHeader("Accept");
+        String acceptParam = req.getParameter("acceptParam");
+        String contentType = ctn.defineContentType(accept, acceptParam);
+
+        ExceptionResponse response = new ExceptionResponse();
+        response.setTimestamp(LocalDateTime.now());
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setError(HttpStatus.BAD_REQUEST);
+        response.setMessage("Parameter " + exception.getName() + " has invalid value: "
+                + exception.getValue());
+        response.setPath(req.getRequestURI());
+
+        if ("text/csv".equals(contentType)) {
+            String csv = csvFormatter.apiExceptionToCsv(response);
+            return new ResponseEntity<>(csv, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Method to handle the error message for missing params
+     * 
+     * @param exception The exception thrown
+     * @param req       The request where we get the accept type.
+     * @return The corresponding exception message.
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<?> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException exception, HttpServletRequest req) {
+
+        String accept = req.getHeader("Accept");
+        String acceptParam = req.getParameter("acceptParam");
+        String contentType = ctn.defineContentType(accept, acceptParam);
+
+        ExceptionResponse response = new ExceptionResponse();
+        response.setTimestamp(LocalDateTime.now());
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setError(HttpStatus.BAD_REQUEST);
+        response.setMessage("The object :" + exception.getObjectName() + " is badly formatted");
         response.setPath(req.getRequestURI());
 
         if ("text/csv".equals(contentType)) {

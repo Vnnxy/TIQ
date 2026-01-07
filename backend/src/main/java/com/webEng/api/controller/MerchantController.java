@@ -9,6 +9,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.webEng.api.dto.MerchantPostDto;
+import com.webEng.api.exception.ApiException;
 import com.webEng.api.model.Merchant;
 import com.webEng.api.service.MerchantService;
 import com.webEng.api.utils.CsvFormatter;
@@ -55,11 +57,9 @@ public class MerchantController {
             @PathVariable Integer id, @RequestParam(required = false) String acceptParam) {
         String contentType = ctn.defineContentType(accept, acceptParam);
         Merchant tx = merchantService.getMerchant(id);
-        HttpStatus status = tx == null ? HttpStatus.NO_CONTENT : HttpStatus.OK;
-
         if (contentType.equals("text/csv"))
-            return new ResponseEntity<>(csvFormatter.merchantToCsv(tx), status);
-        return new ResponseEntity<>(tx, status);
+            return new ResponseEntity<>(csvFormatter.merchantToCsv(tx), HttpStatus.OK);
+        return new ResponseEntity<>(tx, HttpStatus.OK);
     }
 
     /**
@@ -69,18 +69,21 @@ public class MerchantController {
      * 
      * @param accept      Header with the accepted files
      * @param acceptParam Accept parameter for representation
+     * @param limit       Number of merchants we want
+     * @param offset      The index we start from
      * @return ResponseEntity object with either the List of merchants or its csv
      *         representation.
      */
-    @GetMapping()
+    @GetMapping({ "", "/" })
     public ResponseEntity<?> getMerchants(@RequestHeader(value = "Accept", required = false) String accept,
+            @RequestParam(required = false, defaultValue = "20") Integer limit,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false) String acceptParam) {
         String contentType = ctn.defineContentType(accept, acceptParam);
-        List<Merchant> result = merchantService.getMerchants();
-        HttpStatus status = result.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK;
+        List<Merchant> result = merchantService.getMerchants(limit, page);
         if (contentType.equals("text/csv"))
-            return new ResponseEntity<>(csvFormatter.merchantListToCsv(result), status);
-        return new ResponseEntity<>(result, status);
+            return new ResponseEntity<>(csvFormatter.merchantListToCsv(result), HttpStatus.OK);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     /**
@@ -92,11 +95,15 @@ public class MerchantController {
      * @return ResponseEntity object with either the Merchant or its csv
      *         representation.
      */
-    @PostMapping
+    @PostMapping({ "", "/" })
     public ResponseEntity<?> postMerchant(@RequestHeader(value = "Accept", required = false) String accept,
-            @Valid @RequestBody Merchant merchant, @RequestParam(required = false) String acceptParam) {
+            @Valid @RequestBody MerchantPostDto merchant, @RequestParam(required = false) String acceptParam) {
+
         String contentType = ctn.defineContentType(accept, acceptParam);
-        Merchant saved = merchantService.saveMerchant(merchant);
+        Merchant data = new Merchant();
+        data.setMerchantCity(merchant.getMerchantCity());
+        data.setMerchantState(merchant.getMerchantState());
+        Merchant saved = merchantService.saveMerchant(data);
         if (contentType.equals("text/csv"))
             return new ResponseEntity<>(csvFormatter.merchantToCsv(saved), HttpStatus.CREATED);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -119,13 +126,13 @@ public class MerchantController {
         HttpStatus status = HttpStatus.OK;
         String contentType = ctn.defineContentType(accept, acceptParam);
         if (!merchantService.existsById(id)) {
-            status = HttpStatus.NOT_FOUND;
+            throw new ApiException(HttpStatus.NOT_FOUND, "The resource with id: " + id + " was not found");
         }
+        merchant.setId(id);
         Merchant saved = merchantService.updateMerchant(merchant);
-
         if (contentType.equals("text/csv"))
             return new ResponseEntity<>(csvFormatter.merchantToCsv(saved), status);
-        return ResponseEntity.status(HttpStatus.OK).body(status);
+        return new ResponseEntity<>(saved, status);
     }
 
     /**
@@ -143,8 +150,8 @@ public class MerchantController {
         String contentType = ctn.defineContentType(accept, acceptParam);
         merchantService.deleteMerchant(id);
         if (contentType.equals("text/csv"))
-            return new ResponseEntity<>(csvFormatter.merchantToCsv(deleted), HttpStatus.OK);
-        return ResponseEntity.status(HttpStatus.OK).body(deleted);
+            return new ResponseEntity<>(csvFormatter.merchantToCsv(deleted), HttpStatus.NO_CONTENT);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(deleted);
     }
 
 }
