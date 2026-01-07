@@ -52,7 +52,7 @@ public class MerchantController {
      * @return ResponseEntity object with either the Merchant or its csv
      *         representation.
      */
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = { "application/json", "text/csv" })
     public ResponseEntity<?> getMerchant(@RequestHeader(value = "Accept", required = false) String accept,
             @PathVariable Integer id, @RequestParam(required = false) String acceptParam) {
         String contentType = ctn.defineContentType(accept, acceptParam);
