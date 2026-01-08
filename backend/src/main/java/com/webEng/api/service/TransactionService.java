@@ -14,15 +14,15 @@ import com.webEng.api.dto.*;
  */
 public interface TransactionService {
 
-    Transaction getById(Integer id);
+    TransactionDto getById(Integer id);
 
-    Transaction save(Transaction transaction); // also update
+    TransactionDto save(TransactionDto dto); // also update
 
     void deleteById(Integer id);
 
-    List<Transaction> findFiltered(Integer clientId, Integer year, Integer month, Integer limit);
+    List<TransactionDto> findFiltered(Integer clientId, Integer year, Integer month, Integer limit);
 
-    List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit);
+    List<TransactionDto> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit);
 
     /**
      * Invoques the getAvgAmount method from the repository.

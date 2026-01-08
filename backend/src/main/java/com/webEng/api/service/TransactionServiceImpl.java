@@ -1,13 +1,12 @@
 package com.webEng.api.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.webEng.api.dto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.webEng.api.dto.AvgAmountDto;
-import com.webEng.api.dto.MaximumAmountDto;
-import com.webEng.api.dto.TotalAmountDto;
 import com.webEng.api.exception.ApiException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,33 +102,45 @@ public class TransactionServiceImpl implements TransactionService {
 
     }
 
-    /** Retrieve transaction by ID */
-    @Override // the deprecated JpaRepository function
-    public Transaction getById(Integer id)
+    /**
+     * Gets a transaction by id.
+     *
+     * @param id The id of the transaction
+     * @return
+     */
+    @Override
+    public TransactionDto getById(Integer id)
     {
         if (id == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "id is a required field");
-        return repoTransaction.findById(id)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Transaction not found with id = " + id));
+        return new TransactionDto(repoTransaction.findById(id)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Transaction not found with id = " + id)));
     }
 
     /** Create or update a transaction */
     @Override
-    public Transaction save(Transaction transaction)
+    public TransactionDto save(TransactionDto dto)
     {
-        if (transaction == null || transaction.getClientId() == null
-                || transaction.getAmount() == null || transaction.getDate() == null)
+        if (dto == null || dto.getClientId() == null
+                || dto.getAmount() == null || dto.getDate() == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "Missing data");
 
         try
         {
+            // Create transaction
+            Transaction tx = new Transaction();
+            tx.setId(dto.getId()); // null if post
+            tx.setClientId(dto.getClientId());
+            tx.setTimestamp(dto.getDate());
+            tx.setAmount(dto.getAmount());
+
             // fetch merchant entity id
-            Integer merchantId = transaction.getMerchant().getId();
+            Integer merchantId = dto.getMerchantId();
             Merchant merchant = repoMerchant.findById(merchantId)
                     .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Merchant not found"));
+            tx.setMerchant(merchant);
 
-            transaction.setMerchant(merchant);
-            return repoTransaction.save(transaction);
+            return new TransactionDto(repoTransaction.save(tx));
         }
         catch (Exception e)
         {
@@ -157,20 +168,50 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
-    /** Filter transactions */
+    /**
+     * Finds transactions that match select filters
+     *
+     * @param clientId clientId to match
+     * @param year year to match
+     * @param month month to match
+     * @param limit limit to the number of returned transactions
+     * @return matched transactions list
+     */
     @Override
-    public List<Transaction> findFiltered(Integer clientId, Integer year, Integer month, Integer limit)
+    public List<TransactionDto> findFiltered(Integer clientId, Integer year, Integer month, Integer limit)
     {
-        return repoTransaction.findFiltered(clientId, year, month, limit);
+        var transactions = repoTransaction.findFiltered(clientId, year, month, limit);
+        List<TransactionDto> dtoList = new ArrayList<>(List.of());
+
+        for (var tx : transactions)
+        {
+            dtoList.add(new TransactionDto(tx));
+        }
+
+        return dtoList;
     }
 
-    /** Delete filtered transactions */
+    /**
+     * Deletes transactions that match select filters
+     *
+     * @param clientId clientId to match
+     * @param year year to match
+     * @param month month to match
+     * @param limit limit to the number of returned transactions
+     * @return deleted transactions list
+     */
     @Override
-    public List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit)
+    public List<TransactionDto> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit)
     {
         var transactions = repoTransaction.findFiltered(clientId, year, month, limit);
         repoTransaction.deleteFiltered(clientId, year, month, limit);
-        return transactions;
+        List<TransactionDto> dtoList = new ArrayList<>(List.of());
+        for (var tx : transactions)
+        {
+            dtoList.add(new TransactionDto(tx));
+        }
+
+        return dtoList;
     }
 
     public boolean existsById(Integer id)

@@ -3,7 +3,11 @@ package com.webEng.api.utils;
 import com.webEng.api.dto.AvgAmountDto;
 import com.webEng.api.dto.MaximumAmountDto;
 import com.webEng.api.dto.TotalAmountDto;
+
+import java.util.ArrayList;
 import java.util.List;
+
+import com.webEng.api.dto.TransactionDto;
 import com.webEng.api.exception.*;
 import com.webEng.api.model.Merchant;;
 
@@ -99,5 +103,51 @@ public class CsvFormatter {
                     .append(merchant.getMerchantState()).append("\n");
         }
         return sb.toString();
+    }
+
+    /**
+     * Formats a list of transactions into a string list of csv
+     *
+     * @param list Source list of transactions.
+     * @return List of csv lines in string format
+     */
+    public String transactionToCsv(List<TransactionDto> list)
+    {
+        var sb = new StringBuilder();
+        sb.append("id,clientId,merchantId,date,amount\n");
+
+        for (var elem : list)
+        {
+            sb.append(transactionToCsv(elem, true));
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Formats a transaction into a string
+     *
+     * @param tx transaction to be converted
+     * @return
+     */
+    public String transactionToCsv(TransactionDto tx, Boolean repeat)
+    {
+        var sb = new StringBuilder();
+
+        if (!repeat)
+            sb.append("id,clientId,merchantId,date,amount\n");
+
+        sb.append(tx.getId()).append(",")
+                .append(tx.getClientId()).append(",")
+                .append(tx.getMerchantId()).append(",")
+                .append(tx.getDate()).append(",")
+                .append(tx.getAmount()).append("\n");
+
+        return sb.toString();
+    }
+
+    public String transactionToCsv(TransactionDto tx)
+    {
+        return transactionToCsv(tx, false);
     }
 }

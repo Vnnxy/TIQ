@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.webEng.api.dto.AvgAmountDto;
 import com.webEng.api.dto.MaximumAmountDto;
 import com.webEng.api.dto.TotalAmountDto;
-import com.webEng.api.model.Transaction;
+import com.webEng.api.dto.TransactionDto;
+import com.webEng.api.dto.TransactionWriteDto;
 import com.webEng.api.exception.ApiException;
 import com.webEng.api.service.TransactionService;
 import com.webEng.api.utils.CsvFormatter;
@@ -152,47 +153,100 @@ public class TransactionController {
     public ResponseEntity<?> getById(@RequestHeader(value = "Accept", required = false) String accept,
             @PathVariable Integer id, @RequestParam(required = false) String acceptParam) {
         String contentType = ctn.defineContentType(accept, acceptParam);
-        Transaction tx = transactionService.getById(id);
+        TransactionDto tx = transactionService.getById(id);
         HttpStatus status = tx == null ? HttpStatus.NO_CONTENT : HttpStatus.OK;
 
         if (contentType.equals("text/csv"))
-            return new ResponseEntity<>(tx, status);// to csv
+            return new ResponseEntity<>(csvFormatter.transactionToCsv(tx), status);// to csv
         return new ResponseEntity<>(tx, status);
     }
 
+    /**
+     * Creates a new transaction in the database
+     *
+     * @param accept Header (Optional) with content type
+     * @param transaction Transaction (post dto) to create
+     * @param acceptParam Optional content type param
+     * @return the created transaction
+     */
     @PostMapping
     public ResponseEntity<?> create(
-            @Valid @RequestBody Transaction transaction) {
-        Transaction saved = transactionService.save(transaction);
+            @RequestHeader(value = "Accept", required = false) String accept,
+            @Valid @RequestBody TransactionWriteDto transaction,
+            @RequestParam(required = false) String acceptParam) {
+
+        TransactionDto dto = new TransactionDto(transaction);
+        TransactionDto saved = transactionService.save(dto);
+
+        String contentType = ctn.defineContentType(accept, acceptParam);
+        if (contentType.equals("text/csv"))
+            return ResponseEntity.status(HttpStatus.CREATED).body(csvFormatter.transactionToCsv(saved));
+
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    /**
+     * Updates an existing transaction
+     *
+     * @param id id of transaction to update
+     * @param transaction
+     * @return
+     */
     @PutMapping("/{id}")
     public ResponseEntity<?> update(
+            @RequestHeader(value = "Accept", required = false) String accept,
             @PathVariable Integer id,
-            @Valid @RequestBody Transaction transaction) {
+            @Valid @RequestBody TransactionWriteDto transaction,
+            @RequestParam(required = false) String acceptParam) {
         if (!transactionService.existsById(id))
             return ResponseEntity.notFound().build();
 
-        transaction.setId(id);
-        Transaction updated = transactionService.save(transaction);
+        TransactionDto saveDto = new TransactionDto(id, transaction);
+        TransactionDto updated = transactionService.save(saveDto);
+
+        String contentType = ctn.defineContentType(accept, acceptParam);
+        if (contentType.equals("text/csv"))
+            return ResponseEntity.ok(csvFormatter.transactionToCsv(updated));
         return ResponseEntity.ok(updated);
     }
 
+    /**
+     * deletes by id 🤷‍♀️
+     * @param id
+     * @return deleted transaction
+     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Transaction> deleteById(
-            @PathVariable Integer id) {
+    public ResponseEntity<?> deleteById(
+            @RequestHeader(value = "Accept", required = false) String accept,
+            @PathVariable Integer id,
+            @RequestParam(required = false) String acceptParam) {
         var deleted = transactionService.getById(id);
         transactionService.deleteById(id);
+
+        if (ctn.defineContentType(accept, acceptParam).equals("text/csv"))
+            return ResponseEntity.ok(csvFormatter.transactionToCsv(deleted));
         return ResponseEntity.ok(deleted);
     }
 
+    /**
+     * Finds transactions that match the filter
+     *
+     * @param accept content type header
+     * @param clientId
+     * @param year
+     * @param month
+     * @param limit limit to how many items are returned
+     * @param acceptParam content type parameter
+     * @return list of matching transactions
+     */
     @GetMapping
-    public ResponseEntity<List<?>> findFiltered(
-            @RequestParam(required = false) Integer clientId,
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month,
-            @RequestParam(required = false, defaultValue = "100") Integer limit) {
+    public ResponseEntity<?> findFiltered(
+            @RequestHeader(value = "Accept", required = false) String accept,
+            @RequestParam(required = true) Integer clientId, // required should be updated in endpoint doc too
+            @RequestParam(required = true) Integer year,
+            @RequestParam(required = true) Integer month,
+            @RequestParam(required = false, defaultValue = "100") Integer limit,
+            @RequestParam(required = false) String acceptParam) {
         if (month != null && (month < 1 || month > 12)) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid month");
         }
@@ -200,17 +254,35 @@ public class TransactionController {
         var list = transactionService.findFiltered(clientId, year, month, limit);
         HttpStatus status = list.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK;
 
+        if (ctn.defineContentType(accept, acceptParam).equals("text/csv"))
+            return new ResponseEntity<>(csvFormatter.transactionToCsv(list), status);
         return new ResponseEntity<>(list, status);
     }
 
+    /**
+     * Deletes transactions that match the filter
+     *
+     * @param accept content type header
+     * @param clientId
+     * @param year
+     * @param month
+     * @param limit limit to how many items are deleted
+     * @param acceptParam content type parameter
+     * @return list of deleted transactions
+     */
     @DeleteMapping
-    public ResponseEntity<List<?>> deleteFiltered(
-            @RequestParam(required = false) Integer clientId,
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month,
-            @RequestParam(required = false, defaultValue = "100") Integer limit) {
+    public ResponseEntity<?> deleteFiltered(
+            @RequestHeader(value = "Accept", required = false) String accept,
+            @RequestParam(required = true) Integer clientId,
+            @RequestParam(required = true) Integer year,
+            @RequestParam(required = true) Integer month,
+            @RequestParam(required = false, defaultValue = "100") Integer limit,
+            @RequestParam(required = false) String acceptParam) {
         var list = transactionService.deleteFiltered(clientId, year, month, limit);
         HttpStatus status = list.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK;
+
+        if (ctn.defineContentType(accept, acceptParam).equals("text/csv"))
+            return new ResponseEntity<>(csvFormatter.transactionToCsv(list), status);
         return new ResponseEntity<>(list, status);
     }
 
