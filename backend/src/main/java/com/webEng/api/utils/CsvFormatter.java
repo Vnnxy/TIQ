@@ -1,8 +1,13 @@
 package com.webEng.api.utils;
 
 import com.webEng.api.dto.AvgAmountDto;
+import com.webEng.api.dto.ClientSummaryDto;
 import com.webEng.api.dto.MaximumAmountDto;
+import com.webEng.api.dto.MerchantSummaryDto;
+import com.webEng.api.dto.StateSummaryDto;
 import com.webEng.api.dto.TotalAmountDto;
+import com.webEng.api.dto.YearSummaryDto;
+
 import java.util.List;
 import com.webEng.api.exception.*;
 import com.webEng.api.model.Merchant;;
@@ -97,6 +102,70 @@ public class CsvFormatter {
         for (Merchant merchant : merchants) {
             sb.append(merchant.getId()).append(",").append(merchant.getMerchantCity()).append(",")
                     .append(merchant.getMerchantState()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Formats a list of client summary into csv
+     * 
+     * @param summary List containing client summary
+     * @return Formatted string in csv
+     */
+    public String clientSummaryToCsv(List<ClientSummaryDto> summary) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("client_id,total,transaction_count,average_transaction\n");
+        for (ClientSummaryDto csd : summary) {
+            sb.append(csd.getClientId()).append(",").append(csd.getTotal()).append(",")
+                    .append(csd.getTransactionCount()).append(",").append(csd.getAverageTransaction()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Formats a list of merchant summary into csv
+     * 
+     * @param summary List containing merchant summary
+     * @return Formatted string in csv
+     */
+    public String merchantSummaryToCsv(List<MerchantSummaryDto> summary) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("merchant_id,city,state,total,transactions\n");
+        for (MerchantSummaryDto csd : summary) {
+            sb.append(csd.getMerchant_id()).append(",").append(csd.getCity()).append(",")
+                    .append(csd.getState()).append(",").append(csd.getTotal()).append(",").append(csd.getTransactions())
+                    .append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Formats a list of state summary into csv
+     * 
+     * @param summary List containing state summary
+     * @return Formatted string in csv
+     */
+    public String stateSummaryToCsv(List<StateSummaryDto> summary) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("merchant_state,total\n");
+        for (StateSummaryDto csd : summary) {
+            sb.append(csd.getMerchantState()).append(",").append(csd.getTotal()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Formats a list of state summary into csv
+     * 
+     * @param summary List containing year summary
+     * @return Formatted string in csv
+     */
+    public String yearSummaryToCsv(List<YearSummaryDto> summary) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("period,average,count\n");
+        for (YearSummaryDto csd : summary) {
+            sb.append(csd.getPeriod()).append(",").append(csd.getAverage()).append(",").append(csd.getCount())
+                    .append("\n");
         }
         return sb.toString();
     }

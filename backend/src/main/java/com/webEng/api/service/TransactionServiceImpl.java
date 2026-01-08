@@ -85,7 +85,6 @@ public class TransactionServiceImpl implements TransactionService {
      */
     public List<MaximumAmountDto> getMaxAmount(Integer startYear, Integer endYear, Integer limit,
             Integer offset, String dir) {
-        // Might be good to change this to an enum.
         if (startYear == null || endYear == null || limit == null || dir == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "startYear, endYear, limit and dir are required parameters");
         try {
@@ -105,8 +104,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     /** Retrieve transaction by ID */
     @Override // the deprecated JpaRepository function
-    public Transaction getById(Integer id)
-    {
+    public Transaction getById(Integer id) {
         if (id == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "id is a required field");
         return repoTransaction.findById(id)
@@ -115,14 +113,12 @@ public class TransactionServiceImpl implements TransactionService {
 
     /** Create or update a transaction */
     @Override
-    public Transaction save(Transaction transaction)
-    {
+    public Transaction save(Transaction transaction) {
         if (transaction == null || transaction.getClientId() == null
                 || transaction.getAmount() == null || transaction.getDate() == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "Missing data");
 
-        try
-        {
+        try {
             // fetch merchant entity id
             Integer merchantId = transaction.getMerchant().getId();
             Merchant merchant = repoMerchant.findById(merchantId)
@@ -130,9 +126,7 @@ public class TransactionServiceImpl implements TransactionService {
 
             transaction.setMerchant(merchant);
             return repoTransaction.save(transaction);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error while saving transaction");
         }
@@ -140,18 +134,14 @@ public class TransactionServiceImpl implements TransactionService {
 
     /** Delete transaction by ID */
     @Override
-    public void deleteById(Integer id)
-    {
+    public void deleteById(Integer id) {
         if (id == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "id is a required parameter");
         if (!repoTransaction.existsById(id))
             throw new ApiException(HttpStatus.NOT_FOUND, "Transaction not found with id = " + id);
-        try
-        {
+        try {
             repoTransaction.deleteById(id);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error while deleting transactions");
         }
@@ -159,22 +149,19 @@ public class TransactionServiceImpl implements TransactionService {
 
     /** Filter transactions */
     @Override
-    public List<Transaction> findFiltered(Integer clientId, Integer year, Integer month, Integer limit)
-    {
+    public List<Transaction> findFiltered(Integer clientId, Integer year, Integer month, Integer limit) {
         return repoTransaction.findFiltered(clientId, year, month, limit);
     }
 
     /** Delete filtered transactions */
     @Override
-    public List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit)
-    {
+    public List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit) {
         var transactions = repoTransaction.findFiltered(clientId, year, month, limit);
         repoTransaction.deleteFiltered(clientId, year, month, limit);
         return transactions;
     }
 
-    public boolean existsById(Integer id)
-    {
+    public boolean existsById(Integer id) {
         return repoTransaction.existsById(id);
     }
 
