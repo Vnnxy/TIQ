@@ -13,6 +13,19 @@ import jakarta.validation.constraints.NotBlank;
 public class MerchantPostDto {
 
     /**
+     * City where the merchant is based on. If the transaaction was ONLINE,
+     * the tag ONLINE will be present instead of the city name.
+     */
+    @NotBlank(message = "City is required")
+    String merchantCity;
+
+    /**
+     * State where the merchant is located. If the transaction was online,
+     * no state will be provided.
+     */
+    String merchantState;
+
+    /**
      * EMpty constructor
      */
     public MerchantPostDto() {
@@ -25,23 +38,9 @@ public class MerchantPostDto {
      * @param merchantState State of the merchant
      */
     public MerchantPostDto(String merchantCity, String merchantState) {
-        this.merchant_city = merchantCity;
-        this.merchant_state = merchantState;
+        this.merchantCity = merchantCity;
+        this.merchantState = merchantState;
     }
-
-    /**
-     * City where the merchant is based on. If the transaaction was ONLINE,
-     * the tag ONLINE will be present instead of the city name.
-     */
-    @NotBlank(message = "City is required")
-    String merchant_city;
-
-    /**
-     * State where the merchant is located. If the transaction was online,
-     * no state will be provided.
-     */
-    @NotBlank(message = "State is required")
-    String merchant_state;
 
     /**
      * Getter for the city where the merchant is located or if it's online.
@@ -49,7 +48,7 @@ public class MerchantPostDto {
      * @return The city of the merchant or ONLINE tag.
      */
     public String getMerchantCity() {
-        return merchant_city;
+        return merchantCity;
     }
 
     /**
@@ -58,7 +57,7 @@ public class MerchantPostDto {
      * @param merchantCity Name of the city or ONLINE.
      */
     public void setMerchantCity(String merchantCity) {
-        this.merchant_city = merchantCity;
+        this.merchantCity = merchantCity;
     }
 
     /**
@@ -67,7 +66,7 @@ public class MerchantPostDto {
      * @return The merchant state.
      */
     public String getMerchantState() {
-        return merchant_state;
+        return merchantState;
     }
 
     /**
@@ -76,6 +75,6 @@ public class MerchantPostDto {
      * @param merchantState The state where the merchant is located.
      */
     public void setMerchantState(String merchantState) {
-        this.merchant_state = merchantState;
+        this.merchantState = merchantState;
     }
 }

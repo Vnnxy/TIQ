@@ -2,17 +2,25 @@
   <v-dialog v-model="dialog" max-width="600">
     <v-card>
       <v-card-title class="text-h5">
-       Transaction
+       Merchant
       </v-card-title>
 
       <v-card-text>
         <v-form ref="inputRef">
           <v-row>
+           <v-col cols="12">
+            <v-checkbox
+              v-model="form.isOnline"
+              label="Online Merchant"
+              hide-details
+              density="compact"
+            />
+          </v-col>
           <v-col cols="12" md="6">
             <v-text-field
-              v-model.number="form.amount"
-              label="Amount"
-              type="number"
+              v-model="form.merchantCity"
+              label="Merchant City"
+              type="String"
               :rules="[rules.required]"
               required
             />
@@ -20,33 +28,13 @@
 
           <v-col cols="12" md="6">
             <v-text-field
-              v-model.number="form.clientId"
-              label="Client ID"
-              type="number"
-              :rules="[rules.required]"
-              required
+              v-model="form.merchantState"
+              label="Merchant State"
+              type="String"    
             />
           </v-col>
 
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="form.date"
-              label="Date"
-              type="datetime-local"
-              :rules="[rules.required]"
-              required
-            />
-          </v-col>
-
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model.number="form.merchantId"
-              label="Merchant ID"
-              type="number"
-              :rules="[rules.required]"
-              required
-            />
-          </v-col>
+          
         </v-row>
         </v-form>
       </v-card-text>
@@ -71,13 +59,12 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
-import { postTransaction, putTransaction } from '@/api/transactionsApi'
-import { getMerchant } from '@/api/merchantsApi'
+import { postMerchant, putMerchant } from '@/api/merchantsApi'
 
 // Table properties
 const props = defineProps({
   modelValue: Boolean,
-  transaction: {
+  merchant: {
     type: Object,
     default: null
   }
@@ -92,10 +79,9 @@ const inputRef = ref(null)
 // Params
 const form = ref({
   id: null,
-  amount: null,
-  clientId: null,
-  date: null,
-  merchantId: null
+  merchantCity: null,
+  merchantState: null,
+  isOnline: false
 })
 
 //Validation rules
@@ -107,42 +93,33 @@ const rules = {
 watch(() => props.modelValue, (newVal) => {
   dialog.value = newVal
   
-  if (newVal && props.transaction) {
+  if (newVal && props.merchant) {
     form.value = {
-      id: props.transaction.id,
-      amount: props.transaction.amount,
-      clientId: props.transaction.clientId,
-      date: formatDateForInput(props.transaction.date),
-      merchantId: props.transaction.merchantId || null
+      id: props.merchant.id,
+      merchantCity: props.merchant.merchantCity,
+      merchantState: props.merchant.merchantState,
     }
   } else if (newVal) {
     
     resetForm()
   }
 })
-// Used for closing/ending an operation and notifying the TransactionPage
+// Used for closing/ending an operation and notifying the MerchantPage
 watch(dialog, (newVal) => {
   emit('update:modelValue', newVal)
 })
 
 // Flag that indicates if its editing or adding. True if editting, false id adding.
-const isEdit = computed(() => !!props.transaction?.id)
+const isEdit = computed(() => !!props.merchant?.id)
 
-// Date formatting
-function formatDateForInput(dateString) {
-  if (!dateString) return ''
-  
-  return dateString.slice(0, 16)
-}
 
 // Resets form to empty values
 function resetForm() {
   form.value = {
     id: null,
-    amount: null,
-    clientId: null,
-    date: null,
-    merchantId: null
+    merchantCity: null,
+    merchantState: null,
+    isOnline: false
   }
 }
 /**
@@ -155,31 +132,20 @@ async function save() {
   saving.value = true
   
   try {
-    //We get the merchant to see if it exists
-    const [merchantErr, merchantData] = await getMerchant(form.value.merchantId)
-
-    if (merchantErr || !merchantData) {
-      alert(`Validation Error: Merchant ID ${form.value.merchantId} does not exist.`)
-      saving.value = false
-      return 
-    }
-
     const payload = {
-      amount: form.value.amount,
-      clientId: form.value.clientId,
-      date: form.value.date ? form.value.date + ':00' : null, 
-      merchantId: form.value.merchantId
+      merchantCity: form.value.merchantCity,
+      merchantState: form.value.merchantState || null
     }
 
    // We decide based on isEdit flag
     const [err, data] = isEdit.value
-      ? await putTransaction(form.value.id, payload)
-      : await postTransaction(payload)
+      ? await putMerchant(form.value.id, payload)
+      : await postMerchant(payload)
 
 
     if (err) {
       console.error('Save failed:', err)
-      alert('Failed to save transaction')
+      alert('Failed to save merchant')
     } else {
       emit('saved', data)
       close()
@@ -196,4 +162,29 @@ function close() {
   dialog.value = false
   resetForm()
 }
+// Online values
+watch(() => form.value.isOnline, (isOnline) => {
+  if (isOnline) {
+    form.value.merchantCity = 'ONLINE'
+    form.value.merchantState = ''
+  } else {
+    form.value.merchantState = ''
+    form.value.merchantCity = ''
+  }
+})
+// Activate the checkbox if its online
+watch(() => props.modelValue, (newVal) => {
+  dialog.value = newVal
+  
+  if (newVal && props.merchant) {
+    form.value = {
+      id: props.merchant.id,
+      merchantCity: props.merchant.merchantCity,
+      merchantState: props.merchant.merchantState,
+      isOnline: props.merchant.merchantCity === 'ONLINE' 
+    }
+  } else if (newVal) {
+    resetForm()
+  }
+})
 </script>

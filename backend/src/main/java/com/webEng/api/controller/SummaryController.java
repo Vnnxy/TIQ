@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@RequestMapping("/summary")
+@RequestMapping("/summaries")
 @Validated
 /**
  * Controller for the data summary endpoint.
@@ -53,7 +53,7 @@ public class SummaryController {
     public ResponseEntity<?> getClientSummary(@RequestHeader(value = "Accept", required = false) String accept,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month,
-            @RequestParam String view,
+            @RequestParam(required = false, defaultValue = "total") String view,
             @RequestParam(required = false, defaultValue = "20") Integer limit,
             @RequestParam(required = false, defaultValue = "0") Integer offset,
             @RequestParam(required = false) String acceptParam) {
@@ -66,7 +66,7 @@ public class SummaryController {
     }
 
     /**
-     * Getter for the /clients endpoint that returns a summary of the merchants
+     * Getter for the /merchants endpoint that returns a summary of the merchants
      * transactions.
      * 
      * @param accept      Header with the accepted files
@@ -99,7 +99,7 @@ public class SummaryController {
     }
 
     /**
-     * Getter for the /clients endpoint that returns a summary of the states
+     * Getter for the /state endpoint that returns a summary of the states
      * transactions.
      * 
      * @param accept      Header with the accepted files
@@ -124,7 +124,7 @@ public class SummaryController {
     }
 
     /**
-     * Getter for the /clients endpoint that returns a summary of the merchants
+     * Getter for the /year endpoint that returns a summary of the merchants
      * transactions.
      * 
      * @param accept      Header with the accepted files

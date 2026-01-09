@@ -19,7 +19,7 @@ public interface TransactionService {
 
         void deleteById(Integer id);
 
-        List<TransactionDto> findFiltered(Integer clientId, Integer year, Integer month, Integer limit);
+        List<TransactionDto> findFiltered(Integer clientId, Integer year, Integer month, Integer limit, Integer offset);
 
         List<TransactionDto> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit);
 

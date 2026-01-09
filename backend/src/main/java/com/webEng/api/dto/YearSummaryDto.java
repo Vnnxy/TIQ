@@ -13,6 +13,8 @@ public class YearSummaryDto {
     private Long count;
     // The period(time) wither month or quadrant
     private LocalDate period;
+    // Total amount
+    private Double total;
 
     /**
      * Empty constructor
@@ -27,10 +29,11 @@ public class YearSummaryDto {
      * @param average The average amount usd
      * @param count   The number of transactions
      */
-    public YearSummaryDto(LocalDateTime period, Double average, Long count) {
+    public YearSummaryDto(LocalDateTime period, Double average, Long count, Double total) {
         this.period = period.toLocalDate();
         this.average = average;
         this.count = count;
+        this.total = total;
     }
 
     /**
@@ -85,6 +88,22 @@ public class YearSummaryDto {
      */
     public void setPeriod(LocalDateTime period) {
         this.period = period.toLocalDate();
+    }
+
+    /**
+     * Getter for the total usd
+     */
+    public Double getTotal() {
+        return total;
+    }
+
+    /**
+     * Setter for the total
+     * 
+     * @param total the total
+     */
+    public void setTotal(Double total) {
+        this.total = total;
     }
 
 }

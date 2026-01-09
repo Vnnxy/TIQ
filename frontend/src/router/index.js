@@ -8,6 +8,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import TransactionsPage from '@/pages/TransactionsPage.vue'
 import TransactionSearch from '@/pages/TransactionSearch.vue'
+import MerchantsPage from '@/pages/MerchantsPage.vue'
+import SummaryPage from '@/pages/SummaryPage.vue'
 
 
 const router = createRouter({
@@ -16,6 +18,10 @@ const router = createRouter({
     { path: '/', redirect: '/transactions' },
     { path: '/transactions', component: TransactionsPage },
     { path: '/transactions/data', component: TransactionSearch },
+    { path: '/merchants', component: MerchantsPage },
+    { path: '/summaries', component: SummaryPage },
+
+
 
   ],
 })

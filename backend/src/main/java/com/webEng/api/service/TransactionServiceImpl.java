@@ -168,8 +168,9 @@ public class TransactionServiceImpl implements TransactionService {
      * @return matched transactions list
      */
     @Override
-    public List<TransactionDto> findFiltered(Integer clientId, Integer year, Integer month, Integer limit) {
-        var transactions = repoTransaction.findFiltered(clientId, year, month, limit);
+    public List<TransactionDto> findFiltered(Integer clientId, Integer year, Integer month, Integer limit,
+            Integer offset) {
+        var transactions = repoTransaction.findFiltered(clientId, year, month, limit, offset);
         List<TransactionDto> dtoList = new ArrayList<>(List.of());
 
         for (var tx : transactions) {
@@ -190,7 +191,7 @@ public class TransactionServiceImpl implements TransactionService {
      */
     @Override
     public List<TransactionDto> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit) {
-        var transactions = repoTransaction.findFiltered(clientId, year, month, limit);
+        var transactions = repoTransaction.findFiltered(clientId, year, month, limit, 0);
         repoTransaction.deleteFiltered(clientId, year, month, limit);
         List<TransactionDto> dtoList = new ArrayList<>(List.of());
         for (var tx : transactions) {

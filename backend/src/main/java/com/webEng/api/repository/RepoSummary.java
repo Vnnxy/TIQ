@@ -116,7 +116,8 @@ public interface RepoSummary extends JpaRepository<Transaction, Integer> {
                         SELECT
                 DATE_TRUNC(:detail, t.date) AS period,
                 AVG(t.amount) AS average_amount,
-                COUNT(t.id) AS transaction_count
+                COUNT(t.id) AS transaction_count,
+                SUM(t.amount) AS total_amount
             FROM transaction t
             WHERE EXTRACT(YEAR FROM t.date) BETWEEN :start AND :end
             GROUP BY period

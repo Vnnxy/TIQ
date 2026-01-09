@@ -134,12 +134,13 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                             AND (:month IS NULL OR EXTRACT(MONTH FROM t.date) = :month)
                             ORDER BY date DESC
                             LIMIT :limit
+                            OFFSET :offset
                         """, nativeQuery = true)
         List<Transaction> findFiltered(
                         @Param("clientId") Integer clientId,
                         @Param("year") Integer year,
                         @Param("month") Integer month,
-                        @Param("limit") Integer limit);
+                        @Param("limit") Integer limit, @Param("offset") Integer offset);
 
         /** Delete all transactions that match the parameter filters */
         @Modifying
@@ -149,6 +150,7 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                             WHERE (:clientId IS NULL OR client_id = :clientId)
                             AND (:year IS NULL OR EXTRACT(YEAR FROM date) = :year)
                             AND (:month IS NULL OR EXTRACT(MONTH FROM date) = :month)
+
                         """, nativeQuery = true)
         int deleteFiltered(
                         @Param("clientId") Integer clientId,

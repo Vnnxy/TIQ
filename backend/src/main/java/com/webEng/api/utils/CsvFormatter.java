@@ -209,10 +209,10 @@ public class CsvFormatter {
      */
     public String yearSummaryToCsv(List<YearSummaryDto> summary) {
         StringBuffer sb = new StringBuffer();
-        sb.append("period,average,count\n");
+        sb.append("period,average,count,total\n");
         for (YearSummaryDto csd : summary) {
             sb.append(csd.getPeriod()).append(",").append(csd.getAverage()).append(",").append(csd.getCount())
-                    .append("\n");
+                    .append(",").append(csd.getTotal()).append("\n");
         }
         return sb.toString();
     }
