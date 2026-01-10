@@ -9,9 +9,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.webEng.api.dto.MerchantPostDto;
 import com.webEng.api.exception.ApiException;
 import com.webEng.api.model.Merchant;
+import com.webEng.api.model.dto.MerchantPostDto;
 import com.webEng.api.service.MerchantService;
 import com.webEng.api.utils.CsvFormatter;
 
@@ -36,10 +36,10 @@ public class MerchantController {
 
     // The merchantservice
     @Autowired
-    MerchantService merchantService;
+    private MerchantService merchantService;
 
-    ContentTypeNegotiator ctn = new ContentTypeNegotiator();
-    CsvFormatter csvFormatter = new CsvFormatter();
+    private final ContentTypeNegotiator ctn = new ContentTypeNegotiator();
+    private final CsvFormatter csvFormatter = new CsvFormatter();
 
     /**
      * Getter for the /merchants/id endpoint

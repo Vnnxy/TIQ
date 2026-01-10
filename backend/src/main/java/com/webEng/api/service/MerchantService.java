@@ -12,7 +12,7 @@ public interface MerchantService {
      * @param id Id of the merchant
      * @return The merchant
      */
-    Merchant getMerchant(Integer id);
+    public Merchant getMerchant(Integer id);
 
     /**
      * Saves a merchant
@@ -20,7 +20,7 @@ public interface MerchantService {
      * @param merchant Merchant to save
      * @return The saved merchant
      */
-    Merchant saveMerchant(Merchant merchant);
+    public Merchant saveMerchant(Merchant merchant);
 
     /**
      * Gets all merchants
@@ -30,7 +30,7 @@ public interface MerchantService {
      * 
      * @return List containing all merchants
      */
-    List<Merchant> getMerchants(Integer limit, Integer page);
+    public List<Merchant> getMerchants(Integer limit, Integer page);
 
     /**
      * Updates a merchant
@@ -38,14 +38,14 @@ public interface MerchantService {
      * @param merchant
      * @return Updated merchant
      */
-    Merchant updateMerchant(Merchant merchant);
+    public Merchant updateMerchant(Merchant merchant);
 
     /**
      * Deletes a merchant
      * 
      * @param id Id of the merchant to be deleted
      */
-    void deleteMerchant(Integer id);
+    public void deleteMerchant(Integer id);
 
     /**
      * VErifies if a merchant exists
@@ -53,5 +53,5 @@ public interface MerchantService {
      * @param id Id of the merchant
      * @return True if the merchant exists, false otherwise
      */
-    boolean existsById(Integer id);
+    public boolean existsById(Integer id);
 }

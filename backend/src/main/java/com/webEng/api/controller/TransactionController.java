@@ -7,12 +7,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.webEng.api.dto.AvgAmountDto;
-import com.webEng.api.dto.MaximumAmountDto;
-import com.webEng.api.dto.TotalAmountDto;
-import com.webEng.api.dto.TransactionDto;
-import com.webEng.api.dto.TransactionWriteDto;
 import com.webEng.api.exception.ApiException;
+import com.webEng.api.model.dto.AvgAmountDto;
+import com.webEng.api.model.dto.MaximumAmountDto;
+import com.webEng.api.model.dto.TotalAmountDto;
+import com.webEng.api.model.dto.TransactionDto;
+import com.webEng.api.model.dto.TransactionWriteDto;
 import com.webEng.api.service.TransactionService;
 import com.webEng.api.utils.CsvFormatter;
 
@@ -44,10 +44,10 @@ public class TransactionController {
      * The Transaction service
      */
     @Autowired
-    TransactionService transactionService;
+    private TransactionService transactionService;
 
-    ContentTypeNegotiator ctn = new ContentTypeNegotiator();
-    CsvFormatter csvFormatter = new CsvFormatter();
+    private final ContentTypeNegotiator ctn = new ContentTypeNegotiator();
+    private final CsvFormatter csvFormatter = new CsvFormatter();
 
     /**
      * GET endpoint, /transaction/average
@@ -164,7 +164,7 @@ public class TransactionController {
     /**
      * Creates a new transaction in the database
      *
-     * @param accept Header (Optional) with content type
+     * @param accept      Header (Optional) with content type
      * @param transaction Transaction (post dto) to create
      * @param acceptParam Optional content type param
      * @return the created transaction
@@ -188,7 +188,7 @@ public class TransactionController {
     /**
      * Updates an existing transaction
      *
-     * @param id id of transaction to update
+     * @param id          id of transaction to update
      * @param transaction
      * @return
      */
@@ -212,6 +212,7 @@ public class TransactionController {
 
     /**
      * deletes by id 🤷‍♀️
+     * 
      * @param id
      * @return deleted transaction
      */
@@ -231,11 +232,11 @@ public class TransactionController {
     /**
      * Finds transactions that match the filter
      *
-     * @param accept content type header
+     * @param accept      content type header
      * @param clientId
      * @param year
      * @param month
-     * @param limit limit to how many items are returned
+     * @param limit       limit to how many items are returned
      * @param acceptParam content type parameter
      * @return list of matching transactions
      */
@@ -246,12 +247,13 @@ public class TransactionController {
             @RequestParam(required = true) Integer year,
             @RequestParam(required = true) Integer month,
             @RequestParam(required = false, defaultValue = "100") Integer limit,
+            @RequestParam(required = false, defaultValue = "0") Integer offset,
             @RequestParam(required = false) String acceptParam) {
         if (month != null && (month < 1 || month > 12)) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid month");
         }
 
-        var list = transactionService.findFiltered(clientId, year, month, limit);
+        var list = transactionService.findFiltered(clientId, year, month, limit, offset);
         HttpStatus status = list.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK;
 
         if (ctn.defineContentType(accept, acceptParam).equals("text/csv"))
@@ -262,11 +264,11 @@ public class TransactionController {
     /**
      * Deletes transactions that match the filter
      *
-     * @param accept content type header
+     * @param accept      content type header
      * @param clientId
      * @param year
      * @param month
-     * @param limit limit to how many items are deleted
+     * @param limit       limit to how many items are deleted
      * @param acceptParam content type parameter
      * @return list of deleted transactions
      */

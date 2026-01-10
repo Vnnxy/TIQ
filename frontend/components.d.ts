@@ -17,6 +17,7 @@ declare module 'vue' {
     CreateMenu: typeof import('./src/components/CreateMenu.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     MainMenu: typeof import('./src/components/MainMenu.vue')['default']
+    MerchantMenu: typeof import('./src/components/MerchantMenu.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TBTable: typeof import('./src/components/TBTable.vue')['default']

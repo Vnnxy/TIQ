@@ -236,7 +236,8 @@ async function search() {
 
     if (mode.value === 'total') {
         const [, data] = await getTransactionTotal(totalParams.value)
-        result.value = data
+        if(!data) result.value = []
+        else result.value = data
     }
 
     if (mode.value === 'tb') {

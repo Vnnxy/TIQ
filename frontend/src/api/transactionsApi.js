@@ -93,7 +93,10 @@ export async function getTransaction(id) {
         return [null, data]
     }
     catch (e) {
-        return [e]
+        if (e.response && e.response.status === 404) {
+            return [null, null]
+        }
+        return [e, null]
     }
 }
 /**
@@ -111,8 +114,8 @@ export async function deleteTransaction(id) {
     }
 }
 /**
- * Consumes the Transactions/{id} endpoint. Creates a single transaction
- * @param  id Transaction id
+ * Consumes the Transactions/ endpoint. Creates a single transaction
+ * @param  params Transaction id
  * @returns A transaction or null.
  */
 export async function postTransaction(params) {
@@ -127,6 +130,7 @@ export async function postTransaction(params) {
 /**
  * Consumes the Transactions/{id} endpoint. Updates a single transaction
  * @param  id Transaction id
+ * @param params the Transaction
  * @returns A transaction or null.
  */
 export async function putTransaction(id, params) {

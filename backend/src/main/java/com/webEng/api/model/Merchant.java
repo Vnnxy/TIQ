@@ -34,7 +34,6 @@ public class Merchant {
      * State where the merchant is located. If the transaction was online,
      * no state will be provided.
      */
-    @NotBlank(message = "State is required")
     String merchant_state;
 
     /**
