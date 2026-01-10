@@ -4,11 +4,14 @@
  * Bootstraps Vuetify and other plugins then mounts the App`
  */
 
+import 'vuetify/styles'
+
 // Plugins
 import { registerPlugins } from '@/plugins'
 
 // Components
 import App from './App.vue'
+import 'leaflet/dist/leaflet.css' // for the OSM map
 
 // Composables
 import { createApp } from 'vue'

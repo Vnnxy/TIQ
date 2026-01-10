@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
     AvgTable: typeof import('./src/components/AvgTable.vue')['default']
+    CityMapModal: typeof import('./src/components/CityMapModal.vue')['default']
     CreateMenu: typeof import('./src/components/CreateMenu.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     MainMenu: typeof import('./src/components/MainMenu.vue')['default']

@@ -12,7 +12,6 @@
         <h1 class="text-h2 font-weight-bold">Vuetify</h1>
       </div>
 
-      
       <v-navigation-drawer permanent>
         <v-list-item title="Transaction manager" ></v-list-item>
         <v-divider></v-divider>

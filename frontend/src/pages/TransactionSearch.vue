@@ -14,7 +14,13 @@
         <v-form v-if="mode === 'average'" ref="avgRef" >
             <v-row  class="mt-4">
             <v-col cols="12" md="4">
-                <v-text-field v-model="avgParams.city" label="City" :rules="[rules.required]"/>
+                <v-text-field v-model="avgParams.city" label="City" :rules="[rules.required]">
+                  <template #append-inner>
+                    <v-btn icon variant="text" @click="openCityMap" :disabled="!avgParams.city">
+                      <v-icon>mdi-map</v-icon>
+                    </v-btn>
+                  </template>
+                </v-text-field>
             </v-col>
             <v-col cols="12" md="4">
                 <v-text-field v-model.number="avgParams.year" label="Year" type="number" :rules="[rules.required]" />
@@ -42,7 +48,7 @@
                 </v-col>
             </v-row>
         </v-form>
-        
+
         <v-form v-if="mode === 'tb'"  ref="tbRef">
             <v-row class="mt-4">
                 <v-col cols="12" md="3">
@@ -104,6 +110,13 @@
       :loading="loading"
     />
   </v-container>
+
+  <CityMapModal
+    v-if="showMap"
+    :lat="cityCoords.lat"
+    :lng="cityCoords.lng"
+    @close="showMap=false"
+  />
 </template>
 
 
@@ -114,13 +127,16 @@ import AvgTable from '@/components/AvgTable.vue'
 import TotalTable from '@/components/TotalTable.vue'
 import TBTable from '@/components/TBTable.vue'
 
+import CityMapModal from "@/components/CityMapModal.vue";
+import { geocodeCity } from "@/services/geocoding.js";
+
 import {
   getTransactionAverage,
   getTransactionTotal,
   getTransactionTB,
 } from '@/api/transactionsApi'
 
-// The current mode 
+// The current mode
 const mode = ref('average')
 // Loading var for vuetify
 const loading = ref(false)
@@ -162,7 +178,7 @@ const tbForm = reactive({
 })
 /**
  * Parameters for the top bottom. We handle the previous year conversion by doing start year = Year-previous years
- * or Year,Year if we only need one year. 
+ * or Year,Year if we only need one year.
  */
 const tbParams = computed(() => {
   if (!tbForm.year) return null
@@ -196,6 +212,10 @@ const currentComponent = computed(() => {
     case 'tb': return TBTable
   }
 })
+// References for the city map modal
+const showMap = ref(false)
+const cityCoords = ref({ lat: 0, lng: 0})
+
 /**
  * Function that retrieves the dsta from the api depnding on the specified mode.
  */
@@ -225,6 +245,15 @@ async function search() {
     }
 
     loading.value = false
+}
+
+/**
+ * function to show the city map modal
+ */
+async function openCityMap() {
+    const coords = await geocodeCity(avgParams.value.city) // should replace with a back-end api fetch
+    cityCoords.value = { lat: coords.lat, lng: coords.lon } // translate nominatim "lon" to leaflet "lng"
+    showMap.value = true
 }
 
 </script>
