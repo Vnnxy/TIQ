@@ -9,9 +9,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import jakarta.transaction.Transactional;
 
-import com.webEng.api.dto.MaximumAmountDto;
-import com.webEng.api.dto.TotalAmountDto;
 import com.webEng.api.model.Transaction;
+import com.webEng.api.model.dto.MaximumAmountDto;
+import com.webEng.api.model.dto.TotalAmountDto;
 
 /**
  * Interface for the Transaction repository.
@@ -42,7 +42,8 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                           AND EXTRACT(YEAR FROM t.date) = :year
                           AND (:month IS NULL OR EXTRACT(MONTH FROM t.date) = :month)
                         """, nativeQuery = true)
-        Double getAvgAmount(@Param("city") String city, @Param("year") Integer year, @Param("month") Integer month);
+        public Double getAvgAmount(@Param("city") String city, @Param("year") Integer year,
+                        @Param("month") Integer month);
 
         /**
          * Gets the total amount of processed transactions in USD for a given state and
@@ -69,7 +70,7 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                         LIMIT :limit
                         OFFSET :offset;
                         """, nativeQuery = true)
-        List<TotalAmountDto> getTotalAmount(@Param("state") String state, @Param("month") Integer month,
+        public List<TotalAmountDto> getTotalAmount(@Param("state") String state, @Param("month") Integer month,
                         @Param("limit") Integer limit, @Param("offset") Integer offset);
 
         /**
@@ -95,7 +96,7 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                                 LIMIT :limit
                                 OFFSET :offset;
                         """, nativeQuery = true)
-        List<MaximumAmountDto> getMaximumAmountTop(@Param("start") Integer start, @Param("end") Integer end,
+        public List<MaximumAmountDto> getMaximumAmountTop(@Param("start") Integer start, @Param("end") Integer end,
                         @Param("limit") Integer limit, @Param("offset") Integer offset);
 
         /**
@@ -122,7 +123,7 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                                 LIMIT :limit
                                 OFFSET :offset;
                         """, nativeQuery = true)
-        List<MaximumAmountDto> getMaximumAmountBottom(@Param("start") Integer start, @Param("end") Integer end,
+        public List<MaximumAmountDto> getMaximumAmountBottom(@Param("start") Integer start, @Param("end") Integer end,
                         @Param("limit") Integer limit, @Param("offset") Integer offset);
 
         /** Returns a list of transactions filtered by clientID, year, and month */
@@ -136,7 +137,7 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                             LIMIT :limit
                             OFFSET :offset
                         """, nativeQuery = true)
-        List<Transaction> findFiltered(
+        public List<Transaction> findFiltered(
                         @Param("clientId") Integer clientId,
                         @Param("year") Integer year,
                         @Param("month") Integer month,
@@ -152,7 +153,7 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                             AND (:month IS NULL OR EXTRACT(MONTH FROM date) = :month)
 
                         """, nativeQuery = true)
-        int deleteFiltered(
+        public int deleteFiltered(
                         @Param("clientId") Integer clientId,
                         @Param("year") Integer year,
                         @Param("month") Integer month,

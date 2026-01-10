@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.webEng.api.dto.ClientSummaryDto;
-import com.webEng.api.dto.MerchantSummaryDto;
-import com.webEng.api.dto.StateSummaryDto;
-import com.webEng.api.dto.YearSummaryDto;
 import com.webEng.api.exception.ApiException;
+import com.webEng.api.model.dto.ClientSummaryDto;
+import com.webEng.api.model.dto.MerchantSummaryDto;
+import com.webEng.api.model.dto.StateSummaryDto;
+import com.webEng.api.model.dto.YearSummaryDto;
 import com.webEng.api.repository.RepoSummary;
 
 @Service

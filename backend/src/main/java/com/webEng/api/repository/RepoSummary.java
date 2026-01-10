@@ -6,11 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.webEng.api.dto.ClientSummaryDto;
-import com.webEng.api.dto.MerchantSummaryDto;
-import com.webEng.api.dto.StateSummaryDto;
-import com.webEng.api.dto.YearSummaryDto;
 import com.webEng.api.model.Transaction;
+import com.webEng.api.model.dto.ClientSummaryDto;
+import com.webEng.api.model.dto.MerchantSummaryDto;
+import com.webEng.api.model.dto.StateSummaryDto;
+import com.webEng.api.model.dto.YearSummaryDto;
 
 /**
  * Interface for the Summary repository.
@@ -80,7 +80,7 @@ public interface RepoSummary extends JpaRepository<Transaction, Integer> {
                 LIMIT :limit
                 OFFSET :offset;
             """, nativeQuery = true)
-    List<MerchantSummaryDto> getMerchantSummary(@Param("year") Integer year, @Param("month") Integer month,
+    public List<MerchantSummaryDto> getMerchantSummary(@Param("year") Integer year, @Param("month") Integer month,
             @Param("state") String state, @Param("city") String city,
             @Param("limit") Integer limit, @Param("offset") Integer offset);
 
@@ -102,7 +102,7 @@ public interface RepoSummary extends JpaRepository<Transaction, Integer> {
             GROUP BY m.merchant_state
             ORDER BY total DESC;
                 """, nativeQuery = true)
-    List<StateSummaryDto> getStateSummary(@Param("year") Integer year, @Param("month") Integer month);
+    public List<StateSummaryDto> getStateSummary(@Param("year") Integer year, @Param("month") Integer month);
 
     /**
      * Gets the yearly summary by period
@@ -123,7 +123,7 @@ public interface RepoSummary extends JpaRepository<Transaction, Integer> {
             GROUP BY period
             ORDER BY period
                         """, nativeQuery = true)
-    List<YearSummaryDto> getYearSummaryByPeriod(@Param("start") Integer start, @Param("end") Integer end,
+    public List<YearSummaryDto> getYearSummaryByPeriod(@Param("start") Integer start, @Param("end") Integer end,
             @Param("detail") String detail);
 
 }

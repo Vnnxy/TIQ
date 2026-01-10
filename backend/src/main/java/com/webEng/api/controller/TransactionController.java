@@ -7,12 +7,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.webEng.api.dto.AvgAmountDto;
-import com.webEng.api.dto.MaximumAmountDto;
-import com.webEng.api.dto.TotalAmountDto;
-import com.webEng.api.dto.TransactionDto;
-import com.webEng.api.dto.TransactionWriteDto;
 import com.webEng.api.exception.ApiException;
+import com.webEng.api.model.dto.AvgAmountDto;
+import com.webEng.api.model.dto.MaximumAmountDto;
+import com.webEng.api.model.dto.TotalAmountDto;
+import com.webEng.api.model.dto.TransactionDto;
+import com.webEng.api.model.dto.TransactionWriteDto;
 import com.webEng.api.service.TransactionService;
 import com.webEng.api.utils.CsvFormatter;
 
@@ -44,10 +44,10 @@ public class TransactionController {
      * The Transaction service
      */
     @Autowired
-    TransactionService transactionService;
+    private TransactionService transactionService;
 
-    ContentTypeNegotiator ctn = new ContentTypeNegotiator();
-    CsvFormatter csvFormatter = new CsvFormatter();
+    private final ContentTypeNegotiator ctn = new ContentTypeNegotiator();
+    private final CsvFormatter csvFormatter = new CsvFormatter();
 
     /**
      * GET endpoint, /transaction/average

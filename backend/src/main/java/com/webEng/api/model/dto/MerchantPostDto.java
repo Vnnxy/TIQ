@@ -1,4 +1,4 @@
-package com.webEng.api.dto;
+package com.webEng.api.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

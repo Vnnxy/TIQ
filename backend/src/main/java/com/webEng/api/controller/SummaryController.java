@@ -9,10 +9,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.webEng.api.dto.ClientSummaryDto;
-import com.webEng.api.dto.MerchantSummaryDto;
-import com.webEng.api.dto.StateSummaryDto;
-import com.webEng.api.dto.YearSummaryDto;
+import com.webEng.api.model.dto.ClientSummaryDto;
+import com.webEng.api.model.dto.MerchantSummaryDto;
+import com.webEng.api.model.dto.StateSummaryDto;
+import com.webEng.api.model.dto.YearSummaryDto;
 import com.webEng.api.service.SummaryService;
 import com.webEng.api.utils.CsvFormatter;
 
@@ -29,10 +29,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SummaryController {
 
     @Autowired
-    SummaryService summaryService;
+    private SummaryService summaryService;
 
-    ContentTypeNegotiator ctn = new ContentTypeNegotiator();
-    CsvFormatter csvFormatter = new CsvFormatter();
+    private final ContentTypeNegotiator ctn = new ContentTypeNegotiator();
+    private final CsvFormatter csvFormatter = new CsvFormatter();
 
     /**
      * Getter for the /clients endpoint that returns a summary of the clients

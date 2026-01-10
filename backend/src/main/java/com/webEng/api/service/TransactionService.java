@@ -3,7 +3,7 @@ package com.webEng.api.service;
 import java.util.List;
 
 import com.webEng.api.model.Transaction;
-import com.webEng.api.dto.*;
+import com.webEng.api.model.dto.*;
 
 /**
  * @author Miguel Akira López Asano
@@ -13,15 +13,16 @@ import com.webEng.api.dto.*;
  */
 public interface TransactionService {
 
-        TransactionDto getById(Integer id);
+        public TransactionDto getById(Integer id);
 
-        TransactionDto save(TransactionDto dto); // also update
+        public TransactionDto save(TransactionDto dto); // also update
 
-        void deleteById(Integer id);
+        public void deleteById(Integer id);
 
-        List<TransactionDto> findFiltered(Integer clientId, Integer year, Integer month, Integer limit, Integer offset);
+        public List<TransactionDto> findFiltered(Integer clientId, Integer year, Integer month, Integer limit,
+                        Integer offset);
 
-        List<TransactionDto> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit);
+        public List<TransactionDto> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit);
 
         /**
          * Invoques the getAvgAmount method from the repository.

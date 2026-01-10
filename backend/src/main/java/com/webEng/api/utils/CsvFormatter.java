@@ -1,20 +1,18 @@
 package com.webEng.api.utils;
 
-import com.webEng.api.dto.AvgAmountDto;
-import com.webEng.api.dto.ClientSummaryDto;
-import com.webEng.api.dto.MaximumAmountDto;
-import com.webEng.api.dto.MerchantSummaryDto;
-import com.webEng.api.dto.StateSummaryDto;
-import com.webEng.api.dto.TotalAmountDto;
-
 import java.util.ArrayList;
-import com.webEng.api.dto.YearSummaryDto;
-
 import java.util.List;
 
-import com.webEng.api.dto.TransactionDto;
 import com.webEng.api.exception.*;
-import com.webEng.api.model.Merchant;;
+import com.webEng.api.model.Merchant;
+import com.webEng.api.model.dto.AvgAmountDto;
+import com.webEng.api.model.dto.ClientSummaryDto;
+import com.webEng.api.model.dto.MaximumAmountDto;
+import com.webEng.api.model.dto.MerchantSummaryDto;
+import com.webEng.api.model.dto.StateSummaryDto;
+import com.webEng.api.model.dto.TotalAmountDto;
+import com.webEng.api.model.dto.TransactionDto;
+import com.webEng.api.model.dto.YearSummaryDto;;
 
 /**
  * Class handling the conversion from json to csv

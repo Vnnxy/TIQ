@@ -3,7 +3,6 @@ package com.webEng.api.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.webEng.api.dto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +11,7 @@ import com.webEng.api.exception.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.webEng.api.model.Transaction;
+import com.webEng.api.model.dto.*;
 import com.webEng.api.model.Merchant;
 import com.webEng.api.repository.RepoTransaction;
 import com.webEng.api.repository.RepoMerchant;

@@ -1,6 +1,7 @@
 package com.webEng.api.exception;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +24,42 @@ import jakarta.validation.ConstraintViolationException;
  */
 @ControllerAdvice
 public class ApiExceptionHandler {
-    ContentTypeNegotiator ctn = new ContentTypeNegotiator();
-    CsvFormatter csvFormatter = new CsvFormatter();
+
+    private final ContentTypeNegotiator ctn = new ContentTypeNegotiator();
+    private final CsvFormatter csvFormatter = new CsvFormatter();
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> catchAll(Exception ex) {
         ex.printStackTrace();
         return ResponseEntity.status(500).body("EXCEPTION: " + ex.getClass());
+    }
+
+    /**
+     * Helper method that builds a response and set the required parameters
+     * 
+     * @param status  The HTTP Status code
+     * @param message The message
+     * @param req     The request
+     * @return ResponseEntity in the desired representation
+     */
+    private ResponseEntity<?> buildResponse(HttpStatus status, String message, HttpServletRequest req) {
+        // Accept header and params to determine the content type.
+        // https://stackoverflow.com/questions/68554176/get-headers-when-valid-body-not-satisfy-and-exceptionhandler-hits
+        String accept = req.getHeader("Accept");
+        String acceptParam = req.getParameter("acceptParam");
+        String contentType = ctn.defineContentType(accept, acceptParam);
+
+        ExceptionResponse response = new ExceptionResponse();
+        response.setTimestamp(LocalDateTime.now());
+        response.setStatus(status.value());
+        response.setError(status);
+        response.setMessage(message);
+        response.setPath(req.getRequestURI());
+
+        if ("text/csv".equals(contentType)) {
+            return new ResponseEntity<>(csvFormatter.apiExceptionToCsv(response), status);
+        }
+        return new ResponseEntity<>(response, status);
     }
 
     /**
@@ -40,27 +70,9 @@ public class ApiExceptionHandler {
      * @return ResponseEntity with a response.
      */
     @ExceptionHandler(ApiException.class)
-    protected ResponseEntity<?> handleApiException(ApiException exception, final HttpServletRequest req) {
+    public ResponseEntity<?> handleApiException(ApiException exception, final HttpServletRequest req) {
 
-        // Accept header and params to determine the content type.
-        // https://stackoverflow.com/questions/68554176/get-headers-when-valid-body-not-satisfy-and-exceptionhandler-hits
-        String accept = req.getHeader("Accept");
-        String acceptParam = req.getParameter("acceptParam");
-
-        String contentType = ctn.defineContentType(accept, acceptParam);
-
-        ExceptionResponse response = new ExceptionResponse();
-        response.setTimestamp(LocalDateTime.now());
-        response.setStatus(exception.getStatus().value());
-        response.setError(exception.getStatus());
-        response.setMessage(exception.getMessage());
-        response.setPath(req.getRequestURI());
-
-        if ("text/csv".equals(contentType)) {
-            String csv = csvFormatter.apiExceptionToCsv(response);
-            return new ResponseEntity<>(csv, exception.getStatus());
-        }
-        return new ResponseEntity<>(response, exception.getStatus());
+        return buildResponse(exception.getStatus(), exception.getMessage(), req);
     }
 
     /**
@@ -72,25 +84,10 @@ public class ApiExceptionHandler {
      * @return The corresponding exception message.
      */
     @ExceptionHandler(ConstraintViolationException.class)
-    protected ResponseEntity<?> handleConstraintViolation(
+    public ResponseEntity<?> handleConstraintViolation(
             ConstraintViolationException exception, HttpServletRequest req) {
 
-        String accept = req.getHeader("Accept");
-        String acceptParam = req.getParameter("acceptParam");
-        String contentType = ctn.defineContentType(accept, acceptParam);
-
-        ExceptionResponse response = new ExceptionResponse();
-        response.setTimestamp(LocalDateTime.now());
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
-        response.setError(HttpStatus.BAD_REQUEST);
-        response.setMessage(exception.getMessage());
-        response.setPath(req.getRequestURI());
-
-        if ("text/csv".equals(contentType)) {
-            String csv = csvFormatter.apiExceptionToCsv(response);
-            return new ResponseEntity<>(csv, HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), req);
     }
 
     /**
@@ -101,26 +98,12 @@ public class ApiExceptionHandler {
      * @return The corresponding exception message.
      */
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    protected ResponseEntity<?> handleMissingServletRequestParameterException(
+    public ResponseEntity<?> handleMissingServletRequestParameterException(
             MissingServletRequestParameterException exception, HttpServletRequest req) {
+        String message = "Missing required parameter: " + exception.getParameterName() + " of type: "
+                + exception.getParameterType();
 
-        String accept = req.getHeader("Accept");
-        String acceptParam = req.getParameter("acceptParam");
-        String contentType = ctn.defineContentType(accept, acceptParam);
-
-        ExceptionResponse response = new ExceptionResponse();
-        response.setTimestamp(LocalDateTime.now());
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
-        response.setError(HttpStatus.BAD_REQUEST);
-        response.setMessage("Missing required parameter: " + exception.getParameterName() + " of type: "
-                + exception.getParameterType());
-        response.setPath(req.getRequestURI());
-
-        if ("text/csv".equals(contentType)) {
-            String csv = csvFormatter.apiExceptionToCsv(response);
-            return new ResponseEntity<>(csv, HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return buildResponse(HttpStatus.BAD_REQUEST, message, req);
     }
 
     /**
@@ -131,26 +114,12 @@ public class ApiExceptionHandler {
      * @return The corresponding exception message.
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    protected ResponseEntity<?> handleMethodArgumentTypeMismatchException(
+    public ResponseEntity<?> handleMethodArgumentTypeMismatchException(
             MethodArgumentTypeMismatchException exception, HttpServletRequest req) {
 
-        String accept = req.getHeader("Accept");
-        String acceptParam = req.getParameter("acceptParam");
-        String contentType = ctn.defineContentType(accept, acceptParam);
+        String message = "Parameter " + exception.getName() + " has invalid value: " + exception.getValue();
+        return buildResponse(HttpStatus.BAD_REQUEST, message, req);
 
-        ExceptionResponse response = new ExceptionResponse();
-        response.setTimestamp(LocalDateTime.now());
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
-        response.setError(HttpStatus.BAD_REQUEST);
-        response.setMessage("Parameter " + exception.getName() + " has invalid value: "
-                + exception.getValue());
-        response.setPath(req.getRequestURI());
-
-        if ("text/csv".equals(contentType)) {
-            String csv = csvFormatter.apiExceptionToCsv(response);
-            return new ResponseEntity<>(csv, HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     /**
@@ -161,25 +130,11 @@ public class ApiExceptionHandler {
      * @return The corresponding exception message.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<?> handleMethodArgumentNotValidException(
+    public ResponseEntity<?> handleMethodArgumentNotValidException(
             MethodArgumentNotValidException exception, HttpServletRequest req) {
 
-        String accept = req.getHeader("Accept");
-        String acceptParam = req.getParameter("acceptParam");
-        String contentType = ctn.defineContentType(accept, acceptParam);
-
-        ExceptionResponse response = new ExceptionResponse();
-        response.setTimestamp(LocalDateTime.now());
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
-        response.setError(HttpStatus.BAD_REQUEST);
-        response.setMessage("The object :" + exception.getObjectName() + " is badly formatted");
-        response.setPath(req.getRequestURI());
-
-        if ("text/csv".equals(contentType)) {
-            String csv = csvFormatter.apiExceptionToCsv(response);
-            return new ResponseEntity<>(csv, HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        String message = "Validation failed for object: " + exception.getObjectName();
+        return buildResponse(HttpStatus.BAD_REQUEST, message, req);
     }
 
 }
