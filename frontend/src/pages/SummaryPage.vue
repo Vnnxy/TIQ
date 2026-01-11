@@ -156,8 +156,12 @@
             :items="items"
             :loading="loading"
             >
+            <template #item.merchantState="{ item }">
+              {{ item.merchantState ?? 'ONLINE' }}
+            </template>
+
             <template #item.period="{ item }">
-                {{ formatPeriod(item.period) }}
+              {{ formatPeriod(item.period) }}
             </template>
         </v-data-table>
         <v-card v-if="chartUrl" class="mb-4">
@@ -263,7 +267,7 @@ function formatPeriod(period) {
 const clientFilter = ref({  
   year: null,
   month: null,
-  view: null, //total, avg, count
+  view: "total", //total, avg, count
   limit:20,
   offset:null
 })

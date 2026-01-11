@@ -116,7 +116,7 @@ export function statesChart(items) {
     const chartConfig = {
         type: 'outlabeledPie',
         data: {
-            labels: limitedItems.map(i => i.merchantState),
+            labels: limitedItems.map(i => i.merchantState ?? 'ONLINE'),
             datasets: [{
                 data: limitedItems.map(i => i.total),
                 backgroundColor: [
