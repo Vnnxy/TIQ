@@ -1,8 +1,6 @@
 <template>
   <v-container>
     <h1 class="text-h5 mb-4">Summaries</h1>
-
-    <!-- Summary type selector -->
     <v-card class="mb-4">
       <v-card-text>
         <v-select
@@ -13,14 +11,9 @@
         />
       </v-card-text>
     </v-card>
-
-    <!-- Filters (example, optional) -->
-    <!-- Filters -->
 <v-card class="mb-4">
   <v-card-text>
     <v-form ref="form">
-
-      <!-- CLIENT FILTERS -->
       <v-row v-if="summaryType === 'clients'">
         <v-col cols="12" md="3">
           <v-text-field
@@ -51,6 +44,7 @@
                 v-model.number="clientFilter.limit"
                 label="Limit"
                 type="number"
+                :rules="[v => v <= 100 || 'Max is 100']"
               />
             </v-col>
         <v-col cols="12" md="3">
@@ -62,7 +56,6 @@
         </v-col>
       </v-row>
 
-      <!-- MERCHANT FILTERS -->
       <v-row v-if="summaryType === 'merchants'">
         <v-col cols="12" md="3">
           <v-text-field v-model="merchantFilter.year" label="Year" type="number" />
@@ -85,6 +78,7 @@
                 v-model.number="merchantFilter.limit"
                 label="Limit"
                 type="number"
+                :rules="[v => v <= 100 || 'Max is 100']"
               />
             </v-col>
             <v-col cols="12" md="3">
@@ -96,7 +90,6 @@
             </v-col>
       </v-row>
 
-      <!-- STATE FILTERS -->
       <v-row v-if="summaryType === 'states'">
         <v-col cols="12" md="3">
           <v-text-field v-model="stateFilter.year" label="Year" type="number" />
@@ -107,7 +100,6 @@
         </v-col>
       </v-row>
 
-      <!-- YEAR FILTERS -->
       <v-row v-if="summaryType === 'years'">
         <v-col cols="12" md="3">
           <v-text-field v-model="yearFilter.start" label="Start year" type="number" :rules="[rules.required, rules.startBeforeEnd]"/>
@@ -127,7 +119,6 @@
 
       </v-row>
 
-      <!-- LOAD BUTTON -->
       <v-row class="mt-4">
         <v-col cols="12" md="3">
           <v-btn color="primary" @click="loadSummary" :disabled="!formValid">
@@ -140,8 +131,6 @@
   </v-card-text>
 </v-card>
 
-
-    <!-- Result table -->
     <v-card>
       <v-card-text>
          <v-table v-if="summaryType === 'clients' || summaryType === 'merchants'">
@@ -171,6 +160,15 @@
                 {{ formatPeriod(item.period) }}
             </template>
         </v-data-table>
+        <v-card v-if="chartUrl" class="mb-4">
+            <v-card-text>
+                <v-img
+                :src="chartUrl"
+                max-height="400"
+                contain
+                />
+            </v-card-text>
+        </v-card>
 
         <v-alert
           v-if="error"
@@ -194,6 +192,14 @@ import {
   getYearSummary
 } from '@/api/summariesApi'
 
+import {
+  clientsChart,
+  merchantsChart,
+  statesChart,
+  yearsChart
+} from '@/api/chartApiCaller'
+
+
 const summaryTypes = [
   { title: 'Clients', value: 'clients' },
   { title: 'Merchants', value: 'merchants' },
@@ -210,7 +216,7 @@ const error = ref(null)
 const rules = {
   required: value => !!value || 'Field is required',
   startBeforeEnd: value => {
-    if (!value || !yearFilter.value.end) return true; // Don't show error if one is empty
+    if (!value || !yearFilter.value.end) return true; 
     return Number(value) <= Number(yearFilter.value.end) || 'Start year must be before or equal to End year';
   },
   
@@ -219,16 +225,25 @@ const rules = {
     return Number(value) >= Number(yearFilter.value.start) || 'End year must be after or equal to Start year';
   }
 }
-
+// Check if form can be sent
 const formValid = computed(() => {
+    // Year validation
   if (summaryType.value === 'years') {
     const start = Number(yearFilter.value.start)
     const end = Number(yearFilter.value.end)
     return !!start && !!end && start <= end
   }
+  //Client limiter
+  if (summaryType.value === 'clients') {
+    return clientFilter.value.limit > 0 && clientFilter.value.limit <= 100
+  }
+  // merchant limiter
+  if (summaryType.value === 'merchants') {
+    return merchantFilter.value.limit > 0 && merchantFilter.value.limit <= 100
+  }
   return true
 })
-
+//Formats the period between quarter
 function formatPeriod(period) {
   if (!period) return ''
 
@@ -244,7 +259,7 @@ function formatPeriod(period) {
   return `${month.toString()} ${year.toString()}`
 }
 
-
+// FIlter client
 const clientFilter = ref({  
   year: null,
   month: null,
@@ -252,6 +267,7 @@ const clientFilter = ref({
   limit:20,
   offset:null
 })
+// Filter merchant
 const merchantFilter = ref({
   year: null,
   month: null,
@@ -260,17 +276,41 @@ const merchantFilter = ref({
   limit:20,
   offset:null
 })
+// Filter state
 const stateFilter = ref({
   year: null,
   month: null,
 })
+// Filter year
 const yearFilter = ref({
   start: null,
   end: null,
   detail: 'quarter',
 })
+// Calls for the API that makes the charts
+const chartUrl = computed(() => {
+  if (!items.value.length) return null
 
-/* ---------- Dynamic table headers ---------- */
+  switch (summaryType.value) {
+    case 'clients':
+      return clientsChart(items.value, clientFilter.value.view ?? 'total')
+
+    case 'merchants':
+      return merchantsChart(items.value)
+
+    case 'states':
+      return statesChart(items.value)
+
+    case 'years':
+      return yearsChart(items.value, yearFilter.value.detail)
+
+    default:
+      return null
+  }
+})
+
+
+//Table data handler
 const headers = computed(() => {
   switch (summaryType.value) {
     case 'clients':
@@ -310,7 +350,7 @@ const headers = computed(() => {
   }
 })
 
-/* ---------- API dispatcher ---------- */
+// Calls the backend
 async function loadSummary () {
   loading.value = true
   error.value = null
@@ -348,12 +388,13 @@ async function loadSummary () {
   }
 }
     
+// Cleans when summary type changes
 watch(summaryType, () => {
   items.value = []
 })
 
 
-/* Reload automatically when type changes */
+//Reload automatically when type changes 
 watch(summaryType, (newType) => {
   if (newType !== 'years') {
     loadSummary()

@@ -2,7 +2,7 @@
   <v-app>
     <v-navigation-drawer permanent>
       <v-list>
-        <v-list-item title="Transaction Manager" />
+        <v-list-item title="Menu" />
         <v-divider />
 
         <v-list-item
