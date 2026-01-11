@@ -2,7 +2,6 @@
   <v-container>
     <h1 class="text-h5 mb-4">Transaction Search</h1>
 
-    <!-- Search selector -->
     <v-card class="mb-4">
       <v-card-text>
 
@@ -97,7 +96,6 @@
       </v-card-text>
     </v-card>
 
-    <!-- Dynamic result -->
     <component
       :is="currentComponent"
       :result="result"
