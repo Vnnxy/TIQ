@@ -50,6 +50,7 @@ You can access the frontend via: https://webeng.digital-lab.dev/?warpgate-target
 
 2. Run on the root (without cd into the repo):
 ```bash
+docker compose pull
 docker compose up -d
 ```
 
