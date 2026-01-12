@@ -27,6 +27,12 @@ public class ApiExceptionHandler {
     private final ContentTypeNegotiator ctn = new ContentTypeNegotiator();
     private final CsvFormatter csvFormatter = new CsvFormatter();
 
+    /**
+     * Handler for all other exceptions.
+     * 
+     * @param ex exception
+     * @return 500 error.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> catchAll(Exception ex) {
         ex.printStackTrace();

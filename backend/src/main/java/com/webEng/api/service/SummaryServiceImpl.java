@@ -56,11 +56,8 @@ public class SummaryServiceImpl implements SummaryService {
     @Override
     public List<MerchantSummaryDto> getMerchantSummary(Integer year, Integer month, String state, String city,
             Integer limit, Integer offset) {
-        try {
-            return repoSummary.getMerchantSummary(year, month, state, city, limit, offset);
-        } catch (Exception e) {
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Error with the database " + e.getMessage());
-        }
+        return repoSummary.getMerchantSummary(year, month, state, city, limit, offset);
+
     }
 
     /**
@@ -72,12 +69,7 @@ public class SummaryServiceImpl implements SummaryService {
      */
     @Override
     public List<StateSummaryDto> getStateSummary(Integer year, Integer month) {
-        try {
-            return repoSummary.getStateSummary(year, month);
-        } catch (Exception e) {
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error accessing the database " + e.getMessage());
-        }
+        return repoSummary.getStateSummary(year, month);
     }
 
     /**
@@ -93,11 +85,6 @@ public class SummaryServiceImpl implements SummaryService {
         if (!detail.equals("month") && !detail.equals("quarter"))
             throw new ApiException(HttpStatus.BAD_REQUEST,
                     "Bad request, please ude month or quarter as the detail parameter");
-        try {
-            return repoSummary.getYearSummaryByPeriod(year, end, detail);
-        } catch (Exception e) {
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error accessing the database " + e.getMessage());
-        }
+        return repoSummary.getYearSummaryByPeriod(year, end, detail);
     }
 }

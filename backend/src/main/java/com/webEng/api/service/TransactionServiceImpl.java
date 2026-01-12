@@ -42,13 +42,8 @@ public class TransactionServiceImpl implements TransactionService {
     public AvgAmountDto getAvgAmount(String city, Integer year, Integer month) {
         if (city == null || year == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "City and Year are required parameters");
-        try {
-            Double res = repoTransaction.getAvgAmount(city, year, month);
-            return new AvgAmountDto(res);
-        } catch (Exception e) {
-            e.getStackTrace();
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Error accessing the database.");
-        }
+        Double res = repoTransaction.getAvgAmount(city, year, month);
+        return new AvgAmountDto(res);
     }
 
     /**
@@ -64,11 +59,9 @@ public class TransactionServiceImpl implements TransactionService {
             Integer offset) {
         if (state == null || month == null || batchSize == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "State, month and batch size are required parameters");
-        try {
-            return repoTransaction.getTotalAmount(state, month, batchSize, offset);
-        } catch (Exception e) {
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Error accessing the database.");
-        }
+
+        return repoTransaction.getTotalAmount(state, month, batchSize, offset);
+
     }
 
     /**
@@ -86,18 +79,13 @@ public class TransactionServiceImpl implements TransactionService {
             Integer offset, String dir) {
         if (startYear == null || endYear == null || limit == null || dir == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "startYear, endYear, limit and dir are required parameters");
-        try {
-            if (dir.equalsIgnoreCase("bottom"))
-                return repoTransaction.getMaximumAmountBottom(startYear, endYear, limit, offset);
-            else if (dir.equalsIgnoreCase("top"))
-                return repoTransaction.getMaximumAmountTop(startYear, endYear, limit, offset);
-            // This case should never happen as there is validation in the controller.
-            else
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid dir parameter");
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Error accessing the database.");
-        }
+        if (dir.equalsIgnoreCase("bottom"))
+            return repoTransaction.getMaximumAmountBottom(startYear, endYear, limit, offset);
+        else if (dir.equalsIgnoreCase("top"))
+            return repoTransaction.getMaximumAmountTop(startYear, endYear, limit, offset);
+        // This case should never happen as there is validation in the controller.
+        else
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid dir parameter");
 
     }
 
@@ -122,25 +110,21 @@ public class TransactionServiceImpl implements TransactionService {
                 || dto.getAmount() == null || dto.getDate() == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "Missing data");
 
-        try {
-            // Create transaction
-            Transaction tx = new Transaction();
-            tx.setId(dto.getId()); // null if post
-            tx.setClientId(dto.getClientId());
-            tx.setTimestamp(dto.getDate());
-            tx.setAmount(dto.getAmount());
+        // Create transaction
+        Transaction tx = new Transaction();
+        tx.setId(dto.getId()); // null if post
+        tx.setClientId(dto.getClientId());
+        tx.setTimestamp(dto.getDate());
+        tx.setAmount(dto.getAmount());
 
-            // fetch merchant entity id
-            Integer merchantId = dto.getMerchantId();
-            Merchant merchant = repoMerchant.findById(merchantId)
-                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Merchant not found"));
-            tx.setMerchant(merchant);
+        // fetch merchant entity id
+        Integer merchantId = dto.getMerchantId();
+        Merchant merchant = repoMerchant.findById(merchantId)
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Merchant not found"));
+        tx.setMerchant(merchant);
 
-            return new TransactionDto(repoTransaction.save(tx));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error while saving transaction");
-        }
+        return new TransactionDto(repoTransaction.save(tx));
+
     }
 
     /** Delete transaction by ID */
@@ -150,12 +134,9 @@ public class TransactionServiceImpl implements TransactionService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "id is a required parameter");
         if (!repoTransaction.existsById(id))
             throw new ApiException(HttpStatus.NOT_FOUND, "Transaction not found with id = " + id);
-        try {
-            repoTransaction.deleteById(id);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error while deleting transactions");
-        }
+
+        repoTransaction.deleteById(id);
+
     }
 
     /**
