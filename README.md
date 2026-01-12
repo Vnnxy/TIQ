@@ -8,6 +8,21 @@ This document might change in future versions.
 
 # Project setup
 
+Create a .env file with the following information (for local setup, the env is already in the warpgate server):
+
+```
+POSTGRES_DB=<db>
+POSTGRES_USER=<postgres>
+POSTGRES_PASSWORD=<password>
+
+BACKEND_PORT=<backend_port> (8080)
+FRONTEND_PORT=<Frontend_port> (80)
+DB_PORT=5432
+
+TRANSACTIONS_CSV_PATH=transactions-data (or the name of the folder with the csv)
+
+```
+
 # Running in Warp Gate
 
   ## Running using CI/CD pipeline
