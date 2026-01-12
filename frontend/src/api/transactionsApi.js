@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const axiosClient = axios.create({
-    baseURL: 'http://localhost:8080/transactions',
+    baseURL: '/transactions',
     validateStatus: function (status) {
 
         return status >= 200 && status < 300

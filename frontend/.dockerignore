@@ -4,7 +4,7 @@ npm-debug.log
 yarn-error.log
 pnpm-debug.log
 
-# Build output (Docker will build it itself)
+# Build output 
 dist
 
 # VCS
@@ -23,3 +23,6 @@ docker-compose.yml
 # Env files (security)
 .env
 .env.*
+
+.vite
+.cache

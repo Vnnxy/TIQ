@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const axiosClient = axios.create({
-    baseURL: 'http://localhost:8080/summaries',
+    baseURL: '/summaries',
     validateStatus: function (status) {
 
         return status >= 200 && status < 300
