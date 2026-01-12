@@ -27,7 +27,7 @@ public class Merchant {
     /**
      * Real csv file key.
      */
-    @Column(name = "external_merchant_id", unique = true, nullable = false)
+    @Column(name = "external_merchant_id", unique = true)
     Integer externalMerchantId;
 
     /**

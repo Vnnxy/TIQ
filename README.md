@@ -31,7 +31,7 @@ docker login registry.gitlab.com
 docker login registry.gitlab.com -u <gitlab-username> -p <personal-access-token>
 ``` 
 
-You can access the frontend via:
+You can access the frontend via: https://webeng.digital-lab.dev/?warpgate-target=Group%2044%20HTTP%20Frontend#/transactions
 
 2. Run on the root (without cd into the repo):
 ```bash
@@ -52,7 +52,7 @@ docker compose up -d
   docker compose up --build
   ```
 
-You can access the frontend via:
+You can access the frontend via: https://webeng.digital-lab.dev/?warpgate-target=Group%2044%20HTTP%20Frontend#/transactions
 # Running Locally using Docker
 The application can be run locally using Docker Compose.
 
