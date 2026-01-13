@@ -24,7 +24,7 @@ TRANSACTIONS_CSV_PATH=transactions-data (or the name of the folder with the csv)
 ```
 
 # Running in Warp Gate
-
+## NOTE: The csv files that are contained within the server are from 2014 to 2016 (inclusive). 
   ## Running using CI/CD pipeline
   The project is automatically built using GitLab CI/CD:
 
@@ -54,7 +54,7 @@ docker compose pull
 docker compose up -d
 ```
 
-  ## Running using the existing code in the vm
+  ## Running using the existing code in the vm (This is included in case gitlab has an outage)
   Alternatively, the project can be deployed by cloning or copying the repository to the WarpGate VM and building the images locally. 
   Steps:
 
@@ -75,6 +75,11 @@ The application can be run locally using Docker Compose.
 Ensure Docker and Docker Compose are installed
 
 Place CSV files in transactions-data outside.
+
+Add to .env file:
+```bash
+TRANSACTIONS_DATA_PATH=transactions-data
+```
 
 Run:
 ```bash
