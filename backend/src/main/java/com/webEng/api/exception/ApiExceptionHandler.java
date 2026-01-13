@@ -2,6 +2,7 @@ package com.webEng.api.exception;
 
 import java.time.LocalDateTime;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -140,6 +141,18 @@ public class ApiExceptionHandler {
 
         String message = "Validation failed for object: " + exception.getObjectName();
         return buildResponse(HttpStatus.BAD_REQUEST, message, req);
+    }
+
+    /**
+     * Method to handle Deletion of merchant when its referenced
+     * 
+     * @param ex  exception thrown
+     * @param req The request where we get the accept type.
+     * @return The corresponding exception message.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<?> handleFKViolation(DataIntegrityViolationException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.CONFLICT, "Cannot delete merchant: existing transactions reference it", req);
     }
 
 }

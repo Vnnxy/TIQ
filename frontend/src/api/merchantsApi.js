@@ -53,7 +53,9 @@ export async function deleteMerchant(id) {
         return [null, data]
     }
     catch (e) {
-        return [e]
+        if (e.response?.status === 409) {
+            alert("This merchant is being referenced by transactions. ")
+        }
     }
 }
 /**
