@@ -1,0 +1,28 @@
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Build output 
+dist
+
+# VCS
+.git
+.gitignore
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Env files (security)
+.env
+.env.*
+
+.vite
+.cache

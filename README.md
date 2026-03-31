@@ -1,33 +1,90 @@
-This project might change in future versions.
+This document might change in future versions.
 
 # Deadlines:
 
-- D2 : 2/12
+- D2 : 2/12 Req 1, Req 2, Req3
+- D3 : 16/12 Req 4, Req 6 (4 days were added due to the possible complexity of this section of the project.)
+- D4 : 6/1 Req 5, Req 6
 
-  Req 1, Req 2, Req3
+# Project setup
 
-- D3 : 16/12
+Create a .env file with the following information (for local setup, the env is already in the warpgate server):
 
-Req 4, Req 6
+```
+POSTGRES_DB=<db>
+POSTGRES_USER=<postgres>
+POSTGRES_PASSWORD=<password>
 
-4 days were added due to the possible complexity of this section of the project.
+BACKEND_PORT=<backend_port> (8080)
+FRONTEND_PORT=<Frontend_port> (80)
+DB_PORT=5432
 
-- D4 : 6/1
+TRANSACTIONS_CSV_PATH=transactions-data (or the name of the folder with the csv)
 
-Req 5, Req 6
+```
 
-## Tech stack:
+# Running in Warp Gate
+## NOTE: The csv files that are contained within the server are from 2014 to 2016 (inclusive). 
+  ## Running using CI/CD pipeline
+  The project is automatically built using GitLab CI/CD:
 
-Java using Spring for the back-end.
+  - Backend and frontend Docker images are built on each push
 
-Javascript, Bootstrap for the front-end
+  - Images are pushed to the GitLab Container Registry
 
-# Use of AI:
+  - The WarpGate VM pulls the images and runs them via docker compose
 
-We will not use generative AI in the project.
+### Steps:
 
-Generative AI will not be directly fed project code, descriptions of the project, or any other information directly provided by the assignment or database. Generated code won't be used in the code.
+1. Log in to GitLab Container Registry: (Initial setup)
 
-Personal use of generative AI by developers will be restricted to using it in a search engine-like manner, to search for features of the pipeline that may be useful during development.
+``` bash 
+docker login registry.gitlab.com
+```
+*** Note: if 2FA is enabled, login with the [personal token](https://docs.gitlab.com/user/profile/personal_access_tokens/) by doing:
+```bash
+docker login registry.gitlab.com -u <gitlab-username> -p <personal-access-token>
+``` 
 
-by Efa Rhys, Miguel Akira López Asano,
+You can access the frontend via: https://webeng.digital-lab.dev/?warpgate-target=Group%2044%20HTTP%20Frontend#/transactions
+
+2. Run on the root (without cd into the repo):
+```bash
+docker compose pull
+docker compose up -d
+```
+
+  ## Running using the existing code in the vm (This is included in case gitlab has an outage)
+  Alternatively, the project can be deployed by cloning or copying the repository to the WarpGate VM and building the images locally. 
+  Steps:
+
+  1. Copy or clone the repository to the VM (Repository already on WarpGate so this can be skipped)
+
+  2. Place the CSV files outside the repository directory
+
+  3. Run (You have to be inside the repository):
+  ```bash
+  cd group-44-project
+  docker compose up --build
+  ```
+
+You can access the frontend via: https://webeng.digital-lab.dev/?warpgate-target=Group%2044%20HTTP%20Frontend#/transactions
+# Running Locally using Docker
+The application can be run locally using Docker Compose.
+
+Ensure Docker and Docker Compose are installed
+
+Place CSV files in transactions-data outside.
+
+Add to .env file:
+```bash
+TRANSACTIONS_DATA_PATH=transactions-data
+```
+
+Run:
+```bash
+docker compose up --build
+```
+You can access the frontend via:
+http://localhost/
+

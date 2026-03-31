@@ -1,18 +1,17 @@
 package com.webEng.api.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.webEng.api.dto.AvgAmountDto;
-import com.webEng.api.dto.MaximumAmountDto;
-import com.webEng.api.dto.TotalAmountDto;
 import com.webEng.api.exception.ApiException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.webEng.api.model.Transaction;
+import com.webEng.api.model.dto.*;
 import com.webEng.api.model.Merchant;
 import com.webEng.api.repository.RepoTransaction;
 import com.webEng.api.repository.RepoMerchant;
@@ -43,13 +42,8 @@ public class TransactionServiceImpl implements TransactionService {
     public AvgAmountDto getAvgAmount(String city, Integer year, Integer month) {
         if (city == null || year == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "City and Year are required parameters");
-        try {
-            Double res = repoTransaction.getAvgAmount(city, year, month);
-            return new AvgAmountDto(res);
-        } catch (Exception e) {
-            e.getStackTrace();
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Error accessing the database.");
-        }
+        Double res = repoTransaction.getAvgAmount(city, year, month);
+        return new AvgAmountDto(res);
     }
 
     /**
@@ -65,11 +59,9 @@ public class TransactionServiceImpl implements TransactionService {
             Integer offset) {
         if (state == null || month == null || batchSize == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "State, month and batch size are required parameters");
-        try {
-            return repoTransaction.getTotalAmount(state, month, batchSize, offset);
-        } catch (Exception e) {
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Error accessing the database.");
-        }
+
+        return repoTransaction.getTotalAmount(state, month, batchSize, offset);
+
     }
 
     /**
@@ -85,96 +77,112 @@ public class TransactionServiceImpl implements TransactionService {
      */
     public List<MaximumAmountDto> getMaxAmount(Integer startYear, Integer endYear, Integer limit,
             Integer offset, String dir) {
-        // Might be good to change this to an enum.
         if (startYear == null || endYear == null || limit == null || dir == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "startYear, endYear, limit and dir are required parameters");
-        try {
-            if (dir.equalsIgnoreCase("bottom"))
-                return repoTransaction.getMaximumAmountBottom(startYear, endYear, limit, offset);
-            else if (dir.equalsIgnoreCase("top"))
-                return repoTransaction.getMaximumAmountTop(startYear, endYear, limit, offset);
-            // This case should never happen as there is validation in the controller.
-            else
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid dir parameter");
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Error accessing the database.");
-        }
+        if (dir.equalsIgnoreCase("bottom"))
+            return repoTransaction.getMaximumAmountBottom(startYear, endYear, limit, offset);
+        else if (dir.equalsIgnoreCase("top"))
+            return repoTransaction.getMaximumAmountTop(startYear, endYear, limit, offset);
+        // This case should never happen as there is validation in the controller.
+        else
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid dir parameter");
 
     }
 
-    /** Retrieve transaction by ID */
-    @Override // the deprecated JpaRepository function
-    public Transaction getById(Integer id)
-    {
+    /**
+     * Gets a transaction by id.
+     *
+     * @param id The id of the transaction
+     * @return
+     */
+    @Override
+    public TransactionDto getById(Integer id) {
         if (id == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "id is a required field");
-        return repoTransaction.findById(id)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Transaction not found with id = " + id));
+        return new TransactionDto(repoTransaction.findById(id)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Transaction not found with id = " + id)));
     }
 
     /** Create or update a transaction */
     @Override
-    public Transaction save(Transaction transaction)
-    {
-        if (transaction == null || transaction.getClientId() == null
-                || transaction.getAmount() == null || transaction.getDate() == null)
+    public TransactionDto save(TransactionDto dto) {
+        if (dto == null || dto.getClientId() == null
+                || dto.getAmount() == null || dto.getDate() == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "Missing data");
 
-        try
-        {
-            // fetch merchant entity id
-            Integer merchantId = transaction.getMerchant().getId();
-            Merchant merchant = repoMerchant.findById(merchantId)
-                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Merchant not found"));
+        // Create transaction
+        Transaction tx = new Transaction();
+        tx.setId(dto.getId()); // null if post
+        tx.setClientId(dto.getClientId());
+        tx.setTimestamp(dto.getDate());
+        tx.setAmount(dto.getAmount());
 
-            transaction.setMerchant(merchant);
-            return repoTransaction.save(transaction);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error while saving transaction");
-        }
+        // fetch merchant entity id
+        Integer merchantId = dto.getMerchantId();
+        Merchant merchant = repoMerchant.findById(merchantId)
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Merchant not found"));
+        tx.setMerchant(merchant);
+
+        return new TransactionDto(repoTransaction.save(tx));
+
     }
 
     /** Delete transaction by ID */
     @Override
-    public void deleteById(Integer id)
-    {
+    public void deleteById(Integer id) {
         if (id == null)
             throw new ApiException(HttpStatus.BAD_REQUEST, "id is a required parameter");
         if (!repoTransaction.existsById(id))
             throw new ApiException(HttpStatus.NOT_FOUND, "Transaction not found with id = " + id);
-        try
-        {
-            repoTransaction.deleteById(id);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error while deleting transactions");
-        }
+
+        repoTransaction.deleteById(id);
+
     }
 
-    /** Filter transactions */
+    /**
+     * Finds transactions that match select filters
+     *
+     * @param clientId clientId to match
+     * @param year     year to match
+     * @param month    month to match
+     * @param limit    limit to the number of returned transactions
+     * @return matched transactions list
+     */
     @Override
-    public List<Transaction> findFiltered(Integer clientId, Integer year, Integer month, Integer limit)
-    {
-        return repoTransaction.findFiltered(clientId, year, month, limit);
+    public List<TransactionDto> findFiltered(Integer clientId, Integer year, Integer month, Integer limit,
+            Integer offset) {
+        var transactions = repoTransaction.findFiltered(clientId, year, month, limit, offset);
+        List<TransactionDto> dtoList = new ArrayList<>(List.of());
+
+        for (var tx : transactions) {
+            dtoList.add(new TransactionDto(tx));
+        }
+
+        return dtoList;
     }
 
-    /** Delete filtered transactions */
+    /**
+     * Deletes transactions that match select filters
+     *
+     * @param clientId clientId to match
+     * @param year     year to match
+     * @param month    month to match
+     * @param limit    limit to the number of returned transactions
+     * @return deleted transactions list
+     */
     @Override
-    public List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit)
-    {
-        var transactions = repoTransaction.findFiltered(clientId, year, month, limit);
+    public List<TransactionDto> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit) {
+        var transactions = repoTransaction.findFiltered(clientId, year, month, limit, 0);
         repoTransaction.deleteFiltered(clientId, year, month, limit);
-        return transactions;
+        List<TransactionDto> dtoList = new ArrayList<>(List.of());
+        for (var tx : transactions) {
+            dtoList.add(new TransactionDto(tx));
+        }
+
+        return dtoList;
     }
 
-    public boolean existsById(Integer id)
-    {
+    public boolean existsById(Integer id) {
         return repoTransaction.existsById(id);
     }
 

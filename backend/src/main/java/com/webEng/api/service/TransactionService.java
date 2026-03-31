@@ -2,9 +2,7 @@ package com.webEng.api.service;
 
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
-import com.webEng.api.model.Transaction;
-import com.webEng.api.dto.*;
+import com.webEng.api.model.dto.*;
 
 /**
  * @author Miguel Akira López Asano
@@ -14,16 +12,18 @@ import com.webEng.api.dto.*;
  */
 public interface TransactionService {
 
-    Transaction getById(Integer id);
-    Transaction save(Transaction transaction); // also update
+        public TransactionDto getById(Integer id);
 
-    void deleteById(Integer id);
-    List<Transaction> findFiltered(Integer clientId, Integer year, Integer month, Integer limit);
+        public TransactionDto save(TransactionDto dto); // also update
 
-    List<Transaction> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit);
+        public void deleteById(Integer id);
 
+        public List<TransactionDto> findFiltered(Integer clientId, Integer year, Integer month, Integer limit,
+                        Integer offset);
 
-    /**
+        public List<TransactionDto> deleteFiltered(Integer clientId, Integer year, Integer month, Integer limit);
+
+        /**
          * Invoques the getAvgAmount method from the repository.
          * 
          * @param city  Name of the city
@@ -59,6 +59,6 @@ public interface TransactionService {
         public List<MaximumAmountDto> getMaxAmount(Integer startYear, Integer endYear, Integer limit,
                         Integer offset, String dir);
 
-    boolean existsById(Integer id);
+        boolean existsById(Integer id);
 
 }

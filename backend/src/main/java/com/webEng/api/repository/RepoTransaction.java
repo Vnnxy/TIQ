@@ -9,9 +9,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import jakarta.transaction.Transactional;
 
-import com.webEng.api.dto.MaximumAmountDto;
-import com.webEng.api.dto.TotalAmountDto;
 import com.webEng.api.model.Transaction;
+import com.webEng.api.model.dto.MaximumAmountDto;
+import com.webEng.api.model.dto.TotalAmountDto;
 
 /**
  * Interface for the Transaction repository.
@@ -38,11 +38,12 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                         FROM transaction t
                         JOIN merchant m
                             ON t.merchant_id = m.merchant_id
-                        WHERE m.merchant_city = :city
+                        WHERE m.merchant_city ILIKE :city
                           AND EXTRACT(YEAR FROM t.date) = :year
                           AND (:month IS NULL OR EXTRACT(MONTH FROM t.date) = :month)
                         """, nativeQuery = true)
-        Double getAvgAmount(@Param("city") String city, @Param("year") Integer year, @Param("month") Integer month);
+        public Double getAvgAmount(@Param("city") String city, @Param("year") Integer year,
+                        @Param("month") Integer month);
 
         /**
          * Gets the total amount of processed transactions in USD for a given state and
@@ -62,14 +63,14 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                         FROM transaction
                         JOIN merchant
                                 ON transaction.merchant_id = merchant.merchant_id
-                        WHERE merchant_state = :state
+                        WHERE merchant_state ILIKE :state
                                 AND EXTRACT(MONTH FROM transaction.date) = :month
                         GROUP BY DATE(transaction.date)
                         ORDER BY day
                         LIMIT :limit
                         OFFSET :offset;
                         """, nativeQuery = true)
-        List<TotalAmountDto> getTotalAmount(@Param("state") String state, @Param("month") Integer month,
+        public List<TotalAmountDto> getTotalAmount(@Param("state") String state, @Param("month") Integer month,
                         @Param("limit") Integer limit, @Param("offset") Integer offset);
 
         /**
@@ -95,7 +96,7 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                                 LIMIT :limit
                                 OFFSET :offset;
                         """, nativeQuery = true)
-        List<MaximumAmountDto> getMaximumAmountTop(@Param("start") Integer start, @Param("end") Integer end,
+        public List<MaximumAmountDto> getMaximumAmountTop(@Param("start") Integer start, @Param("end") Integer end,
                         @Param("limit") Integer limit, @Param("offset") Integer offset);
 
         /**
@@ -122,40 +123,42 @@ public interface RepoTransaction extends JpaRepository<Transaction, Integer> {
                                 LIMIT :limit
                                 OFFSET :offset;
                         """, nativeQuery = true)
-        List<MaximumAmountDto> getMaximumAmountBottom(@Param("start") Integer start, @Param("end") Integer end,
+        public List<MaximumAmountDto> getMaximumAmountBottom(@Param("start") Integer start, @Param("end") Integer end,
                         @Param("limit") Integer limit, @Param("offset") Integer offset);
 
-    /** Returns a list of transactions filtered by clientID, year, and month*/
-    @Query(value = """ 
-                   SELECT t.*
-                   FROM transaction t
-                   WHERE (:clientId IS NULL OR t.client_id = :clientId)
-                   AND (:year IS NULL OR EXTRACT(YEAR FROM t.date) = :year)
-                   AND (:month IS NULL OR EXTRACT(MONTH FROM t.date) = :month)
-                   LIMIT :limit
-               """, nativeQuery = true)
-    List<Transaction> findFiltered(
-            @Param("clientId") Integer clientId,
-            @Param("year") Integer year,
-            @Param("month") Integer month,
-            @Param("limit") Integer limit);
+        /** Returns a list of transactions filtered by clientID, year, and month */
+        @Query(value = """
+                            SELECT t.*
+                            FROM transaction t
+                            WHERE (:clientId IS NULL OR t.client_id = :clientId)
+                            AND (:year IS NULL OR EXTRACT(YEAR FROM t.date) = :year)
+                            AND (:month IS NULL OR EXTRACT(MONTH FROM t.date) = :month)
+                            ORDER BY date DESC
+                            LIMIT :limit
+                            OFFSET :offset
+                        """, nativeQuery = true)
+        public List<Transaction> findFiltered(
+                        @Param("clientId") Integer clientId,
+                        @Param("year") Integer year,
+                        @Param("month") Integer month,
+                        @Param("limit") Integer limit, @Param("offset") Integer offset);
 
-    /** Delete all transactions that match the parameter filters */
-    @Modifying
-    @Transactional
-    @Query(value = """ 
-                   DELETE FROM transaction
-                   WHERE (:clientId IS NULL OR client_id = :clientId)
-                   AND (:year IS NULL OR EXTRACT(YEAR FROM date) = :year)
-                   AND (:month IS NULL OR EXTRACT(MONTH FROM date) = :month)
-                   LIMIT :limit
-               """, nativeQuery = true)
-    int deleteFiltered(
-            @Param("clientId") Integer clientId,
-            @Param("year") Integer year,
-            @Param("month") Integer month,
-            @Param("limit") Integer limit);
+        /** Delete all transactions that match the parameter filters */
+        @Modifying
+        @Transactional
+        @Query(value = """
+                            DELETE FROM transaction
+                            WHERE (:clientId IS NULL OR client_id = :clientId)
+                            AND (:year IS NULL OR EXTRACT(YEAR FROM date) = :year)
+                            AND (:month IS NULL OR EXTRACT(MONTH FROM date) = :month)
 
-    // findByID, save, deleteById inherited from JpaRepository / CrudRepository
+                        """, nativeQuery = true)
+        public int deleteFiltered(
+                        @Param("clientId") Integer clientId,
+                        @Param("year") Integer year,
+                        @Param("month") Integer month,
+                        @Param("limit") Integer limit);
+
+        // findByID, save, deleteById inherited from JpaRepository / CrudRepository
 
 }

@@ -1,492 +1,1740 @@
 openapi: 3.1.0
 info:
-  title: Financial Transactions API
-  description: Specification for the Financial Transaction app.
-  version: 1.0.0
+  title: OpenAPI definition
+  version: v0
 servers:
-  - url: "localhost/8080"
-
-components:
-  schemas:
-    Transaction:
-      type: object
-      required:
-        - "id"
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        amount:
-          type: number
-        date:
-          type: string
-        client_id:
-          type: integer
-        merchant_info:
-          $ref: "#/components/schemas/MerchantInfo"
-
-    TransactionSummary:
-      type: object
-      required:
-        - "id"
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        amount:
-          type: number
-        date:
-          type: string
-        merchant_city:
-          type: string
-
-    MerchantInfo:
-      type: object
-      properties:
-        merchant_state:
-          type: string
-        merchant_city:
-          type: string
-  responses:
-    BadRequest:
-      description: Request was not well-formed, see error details
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error-message:
-                type: string
-                description: Error message detailing the problem with the request
-        text/csv:
-          schema:
-            type: string
-
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error-message:
-                type: string
-                description: The origin server did not find a current representation for the target resource
-        text/csv:
-          schema:
-            type: string
-
-    NoResults:
-      description: List Empty. There are no results to return.
-
-    ServerError:
-      description: Internal server error. Try again later.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error-messages:
-                type: string
-                description: Server error, try again later
-
-    NotAllowed:
-      description: This method is not allowed.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error-messages:
-                type: string
-                description: This method is not supported
-  parameters:
-    order-dir:
-      name: order-dir
-      in: query
-      required: false
-      description: To order up or bottom.
-      schema:
-        type: string
-        enum:
-          - desc
-          - asc
-
-    limit:
-      name: limit
-      in: query
-      required: true
-      description: Limit the number of returned items
-      schema:
-        type: integer
-        maximum: 100
-
-    batch:
-      name: batch
-      in: query
-      required: false
-      description: The number of items to include in a batch
-      schema:
-        type: integer
-        enum:
-          - 10
-          - 20
-          - 50
-          - 100
-
-    transaction-filter-month:
-      name: month
-      in: query
-      required: false
-      description: Filtering the results by calendar month
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 12
-
-    transaction-filter-year:
-      name: year
-      in: query
-      required: false
-      description: Filtering the results by year
-      schema:
-        type: integer
-
-    transaction-offset-year:
-      name: m-previous-years
-      in: query
-      required: false
-      description: Filters for only the previous m years
-      schema:
-        type: integer
-        minimum: 1
-
-    transaction-id:
-      name: id
-      in: path
-      required: true
-      description: The ID of the transaction
-      schema:
-        type: integer
-
-    client-id:
-      name: client-id
-      in: query
-      required: false
-      description: Id of the client
-      schema:
-        type: integer
-
-    state-filter:
-      name: state
-      in: query
-      required: false
-      description: Filters by state of the US
-      schema:
-        type: string
-
-    city-filter:
-      name: city
-      in: query
-      required: false
-      description: Filters by city
-      schema:
-        type: string
-
+  - url: http://localhost:8080
+    description: Generated server url
 paths:
-  /transactions:
+  /merchants:
     get:
+      description: Retrieves all merchants with limits and pages
       tags:
-        - Transactions
-      description: Retrieves a list of transactions filtered by the queries.
-      summary: Retrieve list of transactions
+        - merchant-controller
+      operationId: getMerchants
       parameters:
-        - $ref: "#/components/parameters/client-id"
-        - $ref: "#/components/parameters/transaction-filter-month"
-        - $ref: "#/components/parameters/transaction-filter-year"
-
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          description: Number of merchants to return.
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          description: Zero-based page operation, combined with "limit" to control pagination.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter
       responses:
         "200":
-          description: ""
+          description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Transaction"
+                  $ref: '#/components/schemas/Merchant'
             text/csv:
               schema:
                 type: string
-                description: id,amount,date,client_id,merchant_state,merchant_city
-                example: id,amount,date,client_id,merchant_state,merchant_city
-                  7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
-                  7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
-
-        "204":
-          $ref: "#/components/responses/NoResults"
-
+              example: |
+                merchant_id,merchant_city,merchant_state
         "400":
-          $ref: "#/components/responses/BadRequest"
-
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
         "500":
-          $ref: "#/components/responses/ServerError"
+          description: Internal Server Error - unexpected database or server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+
     post:
+      description: "Posts a merchant to the database"
       tags:
-        - Transactions
-      summary: Create a new Transaction.
-      description: Creates a new transaction
+        - merchant-controller
+      operationId: postMerchant
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Transaction"
+              $ref: "#/components/schemas/MerchantPostDto"
           text/csv:
             schema:
               type: string
-              description: id,amount,date,client_id,merchant_state,merchant_city
-              example: id,amount,date,client_id,merchant_state,merchant_city
-                7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
-                7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
-
+            example: |
+              merchant_id,merchant_city,merchant_state
+        required: true
       responses:
         "201":
-          description: Transaction successfully created
+          description: CREATED
           content:
             application/json:
               schema:
-                type: integer
-                description: ID of the new transaction
+                $ref: "#/components/schemas/Merchant" # should be dto?
+            "text/csv":
+              schema:
+                type: string
+              example: |
+                merchant_id,merchant_city,merchant_state
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
             text/csv:
               schema:
                 type: string
-          headers:
-            Location:
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
               schema:
                 type: string
-              description: URL of newly created transaction
-        "400":
-          $ref: "#/components/responses/BadRequest"
-    delete:
+              example: |
+                timestamp,status,error,message,path
+  /merchants/{id}:
+    get:
+      description: Gets the merchant from the path variable.
       tags:
-        - Transactions
-      description: Deletes all available transactions filtered by the queries.
-      summary: Deletes all transactions
+        - merchant-controller
+      operationId: getMerchant
       parameters:
-        - $ref: "#/components/parameters/client-id"
-        - $ref: "#/components/parameters/transaction-filter-month"
-        - $ref: "#/components/parameters/transaction-filter-year"
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format:
+          description: ID of the merchant.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
       responses:
-        "204":
-          description: "Deleted successfully"
+        "200":
+          description: OK
           content:
             application/json:
               schema:
                 type: object
-                properties:
-                  deleted:
-                    type: integer
-                    description: Number of deleted transactions
             text/csv:
               schema:
                 type: string
-
+              example: |
+                merchant_id,merchant_city,merchant_state
         "400":
-          $ref: "#/components/responses/BadRequest"
-
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-  /transactions/{id}:
-    parameters:
-      - $ref: "#/components/parameters/transaction-id"
-    get:
-      tags:
-        - Transactions
-      summary: Retrieves the selected transaction
-      description: Retrieves the transaction with the given id.
-      responses:
-        "200":
-          description: ""
+          description: Bad request - required field missing
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Transaction"
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "id is a required field"
             text/csv:
               schema:
                 type: string
-                description: id,amount,date,client_id,merchant_state,merchant_city
-                example: id,amount,date,client_id,merchant_state,merchant_city
-                  7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
-                  7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
-
-        "400":
-          $ref: "#/components/responses/BadRequest"
-
+              example: |
+                timestamp,status,error,message,path
         "404":
-          $ref: "#/components/responses/NotFound"
-
+          description: Not Found - resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 404
+                message: "Merchant not found with id = (id)"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
         "500":
-          $ref: "#/components/responses/ServerError"
-
+          description: Internal Server Error - unexpected database or server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
     put:
+      description: Updates a merchant.
       tags:
-        - Transactions
-      summary: Updates a transaction
-      description: Updates the transaction with the given id.
+        - merchant-controller
+      operationId: putMerchant
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID of the merchant.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Transaction"
-          text/csv:
-            schema:
-              type: string
-              description: id,amount,date,client_id,merchant_state,merchant_city
-              example: id,amount,date,client_id,merchant_state,merchant_city
-                7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
-                7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
+              $ref: "#/components/schemas/Merchant" # should be MerchantPostDto (rename to "MerchantSaveDto"?)
+        required: true
       responses:
         "200":
-          description: "Transaction updated"
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Transaction"
+                $ref: "#/components/schemas/Merchant" # should be MerchantDto
+            "text/csv":
+              schema:
+                type: string
+              example: |
+                merchant_id,merchant_city,merchant_state
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Not Found - resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 404
+                message: "The resource with id: (id) was not found"
             text/csv:
               schema:
                 type: string
-                description: id,amount,date,client_id,merchant_state,merchant_city
-                example: id,amount,date,client_id,merchant_state,merchant_city
-                  7475327,-77.00,01/01/2010 00:01:00,1556,ND,Beulah
-                  7475328,14.57,06/11/2010 14:16:00,67570,IA,Bettendorf
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "404":
-          $ref: "#/components/responses/NotFound"
+              example: |
+                timestamp,status,error,message,path
         "500":
-          $ref: "#/components/responses/ServerError"
+          description: Internal Server Error - unexpected database or server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+    delete:
+      description: Deletes a merchant.
+      tags:
+        - merchant-controller
+      operationId: deleteMerchant
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID of merchant to delete.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
+      responses:
+        "204":
+          description: DELETED
+        "400":
+          description: Bad request - required field missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "id is a required field"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "404":
+          description: Not Found - resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 404
+                message: "Merchant not found with id (id)"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "409":
+          description: Conflict – merchant cannot be deleted due to existing references
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+  /transactions:
+    get:
+      description: Finds transactions that match the filter.
+      tags:
+        - transaction-controller
+      operationId: findFiltered
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: clientId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: clientId to filter for.
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: year for date filter, along with month.
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: month for date filter.
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 100
+          description: limit for return.
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          description: offset for paging.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionDto"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                id,clientId,merchantId,date,amount
+        "204":
+          description: No Content - nothing found in the database
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "Invalid month"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+    post:
+      description: Creates a new transaction.
+      tags:
+        - transaction-controller
+      operationId: create
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionWriteDto"
+        description: Transaction (post dto) to create
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionDto"
+            description: Saved transaction
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+    delete:
+      description: Deletes transactions that match the filter.
+      tags:
+        - transaction-controller
+      operationId: deleteFiltered
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: clientId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: clientId to filter for.
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: year for date to filter, along with month.
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: month to filter.
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 100
+          description: limit to the number of returns.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionDto"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                id,clientId,merchantId,date,amount
+        "204":
+          description: No Content - nothing found in the database
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+
+  /transactions/{id}:
+    get:
+      description: Gets the transaction with the ID.
+      tags:
+        - transaction-controller
+      operationId: getById
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID of the transaction to get.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionDto"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                id,clientId,merchantId,date,amount
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "ID is a required field"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "404":
+          description: Not Found - resource not found
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 404
+                message: "Transaction not found with id = (id)"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+    put:
+      description: Updates the existing transaction.
+      tags:
+        - transaction-controller
+      operationId: update
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID to update
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionWriteDto"
+            description: Transaction details to write.
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionDto"
+              description: The updated transaction
+            text/csv:
+              schema:
+                type: string
+              example: |
+                id,clientId,merchantId,date,amount
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "Missing data"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "404":
+          description: Not Found – transaction does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
 
     delete:
+      description: Deletes the transaction with the id.
       tags:
-        - Transactions
-      summary: Delete a transaction
-      description: Deletes a transaction given an id.
-      responses:
-        "204":
-          description: "Transaction created"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-  /transactions/average:
-    get:
-      tags:
-        - Data Transaction
-      description:
-        Retrieves the average amount per processed transaction (in USD) in a
-        given city per month and year, excluding online transactions.
-
-      summary: Retrieves the average amount.
+        - transaction-controller
+      operationId: deleteById
       parameters:
-        - $ref: "#/components/parameters/city-filter"
-        - $ref: "#/components/parameters/transaction-filter-month"
-        - $ref: "#/components/parameters/transaction-filter-year"
-
-      responses:
-        "204":
-          description: "Average excluding online transaction"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  average:
-                    type: integer
-                    description: Average in USD
-            text/csv:
-              schema:
-                type: string
-
-        "400":
-          $ref: "#/components/responses/BadRequest"
-
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-  /transactions/total:
-    get:
-      tags:
-        - Data Transaction
-      description:
-        Retrieves the total amount in process transactions (in USD) per day
-        at a given US state and for a given calendar month
-
-      summary: Retrieves the total amount.
-      parameters:
-        - $ref: "#/components/parameters/state-filter"
-        - $ref: "#/components/parameters/transaction-filter-month"
-        - $ref: "#/components/parameters/batch"
-
-      responses:
-        "204":
-          description: "Average excluding online transaction"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total:
-                    type: integer
-                    description: Total in USD
-            text/csv:
-              schema:
-                type: string
-
-        "400":
-          $ref: "#/components/responses/BadRequest"
-
-        "500":
-          $ref: "#/components/responses/ServerError"
-
-  /transactions/tb:
-    get:
-      tags:
-        - Data Transaction
-      description: Retrieves the top or bottom N maximum transaction amounts
-        across all data either for a specific year or for the previous M years.
-        You must provide transaction-offset-year or transaction-filter-year,
-        but not both at the same time.
-
-      summary: Retrieves the top or bottom transactions.
-      parameters:
-        - $ref: "#/components/parameters/order-dir"
-        - $ref: "#/components/parameters/limit"
-        - $ref: "#/components/parameters/transaction-offset-year"
-        - $ref: "#/components/parameters/transaction-filter-year"
-
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID of the transaction to delete
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter
       responses:
         "200":
-          description: "Retrieves top or bottom"
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TransactionSummary"
+                $ref: "#/components/schemas/TransactionDto"
+              description: Deleted transaction.
             text/csv:
               schema:
                 type: string
-                description: id,amount,date,merchant_city
-                example: id,amount,date,merchant_city
-                  7475324,-77.00,01/01/2010 00:01:00,Beulah
-
-        "204":
-          $ref: "#/components/responses/NoResults"
+              example: |
+                id,clientId,merchantId,date,amount
         "400":
-          $ref: "#/components/responses/BadRequest"
-
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "ID is a required parameter"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "404":
+          description: Not Found - resource not found
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 404
+                message: "Transaction not found with id (id)"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
         "500":
-          $ref: "#/components/responses/ServerError"
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+  /transactions/total:
+    description: Gets the total amount for transactions matching filters.
+    get:
+      tags:
+        - transaction-controller
+      operationId: getTotalAmount
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: State to filter for.
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+            maximum: 12
+            minimum: 1
+          description: Month to filter for.
+        - name: batchSize
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: How many transaction entries to count.
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          description: Together with batchSize for paging.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TotalAmountDto"
+        "204":
+          description: No Content
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "State, month, and batch size are required parameters"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+  /transactions/tb:
+    description: Returns the top or bottom of the list
+    get:
+      tags:
+        - transaction-controller
+      operationId: getMaxAmount
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: startYear
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: Start year to search from (inclusive).
+        - name: endYear
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: End year to search to (inclusive).
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: Number of entries to get.
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          description: Number of elements to skip.
+        - name: dir
+          in: query
+          required: true
+          schema:
+            type: string
+          description: TOP or BOTTOM to decide the order of the transactions.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
+      responses:
+        "200":
+          description: OK
+          content:
+            "application/json":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MaximumAmountDto"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                maxAmount,timestamp,location
+        "204":
+          description: No Content
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "Please provide a valid ordering param [top | bottom"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+  /transactions/average:
+    description: Returns the average value for transactions matching the filters.
+    get:
+      tags:
+        - transaction-controller
+      operationId: getAvgAmount
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+          description: city to filter for.
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: year to filter for.
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            maximum: 12
+            minimum: 1
+          description: month to filter for.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvgAmountDto"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                avgAmount
+        "204":
+          description: No Content
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "City and year are required parameters"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+
+  /summaries/clients:
+    description: Returns a summary of client transactions.
+    get:
+      tags:
+        - summary-controller
+      operationId: getClientSummary
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          description: Year of the summary.
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          description: Month of the summary
+        - name: view
+          in: query
+          required: false
+          schema:
+            type: string
+            default: total
+          description: avg, total, or count (soft enum) for the summary
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          description: Number of results.
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          description: Index to start from.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClientSummaryDto"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                client_id,total,transaction_count,average_transaction
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "Please use a valid view: total, avg, or count"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+  /summaries/merchants:
+    description: Returns a summary of the merchant's transactions
+    get:
+      tags:
+        - summary-controller
+      operationId: getMerchantsSummary
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          description: Year of the summary.
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          description: month of the summary.
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+          description: state of the merchant.
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+          description: city of the merchant.
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          description: Number of results to get.
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          description: Index to start from.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MerchantSummaryDto"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                merchant_id,city,state,total,transactions
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+  /summaries/state:
+    description: Returns a list of summaries of state transactions
+    get:
+      tags:
+        - summary-controller
+      operationId: getStateSummary
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          description: Year of the summary.
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          description: Month of the summary.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StateSummaryDto"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                merchant_state,total
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+  /summaries/year:
+    description: Summarises a year.
+    get:
+      tags:
+        - summary-controller
+      operationId: getYearSummary
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Content return type header.
+        - name: start
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: The start year of the report.
+        - name: end
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: The end year of the report.
+        - name: detail
+          in: query
+          required: false
+          schema:
+            type: string
+            default: month
+          description: Detail for a monthly view, and a quarter view.
+        - name: acceptParam
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Content return type parameter.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/YearSummaryDto"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                period,average,count,total
+        "400":
+          description: Bad request - required field missing
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "Bad request, please use month or quarter as the detail parameter"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+        "500":
+          description: Internal Server Error - unexpected database or server error
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 500
+                message: "Unexpected server error"
+            text/csv:
+              schema:
+                type: string
+              example: |
+                timestamp,status,error,message,path
+
+components:
+  schemas:
+    AvgAmountDto:
+      type: object
+      required:
+        - avgAmount
+      properties:
+        avgAmount:
+          type: number
+          format: double
+          description: Average amount of the transaction
+    ClientSummaryDto:
+      type: object
+      required:
+        - clientId
+      properties:
+        total:
+          type: number
+          format: double
+          description: The total USD amount.
+        transactionCount:
+          type: integer
+          format: int64
+          description: The number of transactions.
+        averageTransaction:
+          type: number
+          format: double
+          description: The average value of transactions.
+        client_id: # NOTE: inconsistent naming!
+          type: integer
+          format: int32
+          description: The client ID to which this data pertains.
+      description: A DTO for summarising client statistics.
+    MaximumAmountDto:
+      type: object
+      properties:
+        maxAmount:
+          type: number
+          format: double
+          description: The maximum USD amount of a transaction.
+        timestamp:
+          type: string
+          format: date-time
+          description: The timestamp for the transaction.
+        location:
+          type: string
+          description: The city of the retailer, or "ONLINE".
+      description: A DTO for the maximum amount of a transaction.
+    MerchantPostDto:
+      type: object
+      required:
+        - merchantCity
+      properties:
+        merchantCity:
+          type: string
+          description: The city where the merchant is based, or "ONLINE"
+        merchantState:
+          type: string
+          description: The state where the merchant is located, in capital letter state-code.
+      description: A DTO for creating a merchant
+    MerchantSummaryDto:
+      type: object
+      required:
+        - merchant_id
+      properties:
+        merchant_id: # NOTE: Inconsistent naming
+          type: integer
+          format: int32
+          description: The internal ID of the merchant.
+        city:
+          type: string
+          description: The city where the merchant is based, or "ONLINE".
+        state:
+          type: string
+          description: The state where the merchant is located, in capital letter state-code.
+        total:
+          type: number
+          format: double
+          description: The total for transactions of this merchant.
+        transactions:
+          type: integer
+          format: int64
+          description: The number of transactions for this merchant.
+      description: A DTO for summarising a merchant's activity.
+    StateSummaryDto:
+      type: object
+      required:
+        - merchantState
+      properties:
+        merchantState:
+          type: string
+          description: The US state to which this summary pertains.
+        total:
+          type: number
+          format: double
+          description: The total amount in USD of transactions for this state.
+      description: A DTO for the sums all transactions for a certain US state.
+    TotalAmountDto:
+      type: object
+      required:
+        - day
+      properties:
+        day:
+          type: string
+          format: date-time
+          description: The day of the transaction.
+        totalAmount:
+          type: number
+          format: double
+          description: The total amount for this day
+      description: A DTO for the total amount in USD in transactions for a given day.
+    TransactionDto:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique id of the transaction.
+        merchantId:
+          type: integer
+          format: int32
+          description: The ID of the merchant this transaction belongs to.
+        date:
+          type: string
+          format: date-time
+          description: The date and time when this transaction occurred.
+        amount:
+          type: number
+          format: double
+          description: The value of the transaction in USD.
+        clientId:
+          type: integer
+          format: int32
+          description: The ID of the client this transaction belongs to.
+      description: A DTO for all transaction data.
+    TransactionWriteDto:
+      type: object
+      properties:
+        merchantId:
+          type: number
+          format: int32
+          description: The ID of the merchant this transaction belongs to.
+        date:
+          type: string
+          format: date-time
+          description: The date and time when this transaction occurred.
+        amount:
+          type: number
+          format: double
+          description: The value of the transaction in USD.
+        clientId:
+          type: integer
+          format: int32
+          description: The ID of the client this transaction belongs to.
+      description: A DTO for writing new transaction data.
+    YearSummaryDto:
+      type: object
+      required:
+        - period
+      properties:
+        average:
+          type: number
+          format: double
+          description: The average of transactions.
+        count:
+          type: integer
+          format: int64
+          description: How many transactions there was.
+        period:
+          type: string
+          format: date-time
+          description: The period to which this data pertains.
+        total:
+          type: number
+          format: double
+          description: the total of all transactions.
+      description: A DTO for the year's summary.
+
+    Merchant:
+      type: object
+      required:
+        - id
+        - merchantCity
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: The internal ID of the merchant.
+        merchantCity:
+          type: string
+          description: The city from which this merchant is registered. "ONLINE" if the merchant is based online.
+        merchantState:
+          type: string
+          description: The state the merchant is based in. Formatted in two-letter state abbreviations with capital letters.
+        externalId:
+          type: integer
+          format: int32
+          description: CSV file's key for the merchant.
+      description: Model for the merchant data.
+    Transaction:
+      type: object
+      required:
+        - id
+        - merchant
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: The unique identifier for the transaction.
+        merchant:
+          $ref: '#/components/schemas/Merchant'
+        date:
+          type: string
+          format: date-time
+          description: The date of the transaction.
+        amount:
+          type: number
+          format: double
+          description: Amount in USD for the transaction.
+        client_id: # NOTE: Inconsistent naming
+          type: integer
+          format: int32
+          description: ID of the client for the transaction
+      description: Model for a transaction.
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string

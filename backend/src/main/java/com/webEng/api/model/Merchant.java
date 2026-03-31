@@ -1,9 +1,11 @@
 package com.webEng.api.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.persistence.GenerationType;
 
 /**
@@ -16,16 +18,23 @@ import jakarta.persistence.GenerationType;
 public class Merchant {
 
     /**
-     * Unique identifier for the merchant
+     * Unique identifier for the merchant (Surrogate key)
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer merchant_id;
 
     /**
+     * Real csv file key.
+     */
+    @Column(name = "external_merchant_id", unique = true)
+    Integer externalMerchantId;
+
+    /**
      * City where the merchant is based on. If the transaaction was ONLINE,
      * the tag ONLINE will be present instead of the city name.
      */
+    @NotBlank(message = "City is required")
     String merchant_city;
 
     /**
@@ -50,6 +59,24 @@ public class Merchant {
      */
     public void setId(Integer merchantId) {
         this.merchant_id = merchantId;
+    }
+
+    /**
+     * Getter for the external id of the merchant
+     * 
+     * @return integer representing the external id of the merchant.
+     */
+    public Integer getExternalId() {
+        return externalMerchantId;
+    }
+
+    /**
+     * Setter for the external merchant id.
+     * 
+     * @param externalMerchantId Integer external id of the merchant
+     */
+    public void setExternalId(Integer externalMerchantId) {
+        this.externalMerchantId = externalMerchantId;
     }
 
     /**

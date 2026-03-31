@@ -1,10 +1,18 @@
 package com.webEng.api.utils;
 
-import com.webEng.api.dto.AvgAmountDto;
-import com.webEng.api.dto.MaximumAmountDto;
-import com.webEng.api.dto.TotalAmountDto;
+import java.util.ArrayList;
 import java.util.List;
-import com.webEng.api.exception.*;;
+
+import com.webEng.api.exception.*;
+import com.webEng.api.model.Merchant;
+import com.webEng.api.model.dto.AvgAmountDto;
+import com.webEng.api.model.dto.ClientSummaryDto;
+import com.webEng.api.model.dto.MaximumAmountDto;
+import com.webEng.api.model.dto.MerchantSummaryDto;
+import com.webEng.api.model.dto.StateSummaryDto;
+import com.webEng.api.model.dto.TotalAmountDto;
+import com.webEng.api.model.dto.TransactionDto;
+import com.webEng.api.model.dto.YearSummaryDto;;
 
 /**
  * Class handling the conversion from json to csv
@@ -54,6 +62,12 @@ public class CsvFormatter {
         return sb.toString();
     }
 
+    /**
+     * Formats the exceptions to csv representation.
+     * 
+     * @param response The exception we want to format
+     * @return Csv representation of the exception
+     */
     public String apiExceptionToCsv(ExceptionResponse response) {
         StringBuffer sb = new StringBuffer("timestamp,status,error,message,path\n");
         sb.append(response.getTimestamp()).append(",");
@@ -61,6 +75,143 @@ public class CsvFormatter {
         sb.append(response.getError()).append(",");
         sb.append(response.getMessage()).append(",");
         sb.append(response.getPath());
+        return sb.toString();
+    }
+
+    /**
+     * Formats merchants into csv
+     * 
+     * @param merchant The merchant to format
+     * @return Formatted string in csv representation.
+     */
+    public String merchantToCsv(Merchant merchant) {
+        StringBuffer sb = new StringBuffer("merchant_id,merchant_city,merchant_state\n");
+        sb.append(merchant.getId()).append(",");
+        sb.append(merchant.getMerchantCity()).append(",");
+        sb.append(merchant.getMerchantState());
+        return sb.toString();
+    }
+
+    /**
+     * Formats a list of merchants into csv
+     * 
+     * @param merchants List containing merchants
+     * @return Formatted string in csv.
+     */
+    public String merchantListToCsv(List<Merchant> merchants) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("merchant_id,merchant_city,merchant_state\n");
+        for (Merchant merchant : merchants) {
+            sb.append(merchant.getId()).append(",").append(merchant.getMerchantCity()).append(",")
+                    .append(merchant.getMerchantState()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Formats a list of transactions into a string list of csv
+     *
+     * @param list Source list of transactions.
+     * @return List of csv lines in string format
+     */
+    public String transactionToCsv(List<TransactionDto> list) {
+        var sb = new StringBuilder();
+        sb.append("id,clientId,merchantId,date,amount\n");
+
+        for (var elem : list) {
+            sb.append(transactionToCsv(elem, true));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Formats a transaction into a string
+     *
+     * @param tx transaction to be converted
+     * @return
+     */
+    public String transactionToCsv(TransactionDto tx, Boolean repeat) {
+        var sb = new StringBuilder();
+
+        if (!repeat)
+            sb.append("id,clientId,merchantId,date,amount\n");
+
+        sb.append(tx.getId()).append(",")
+                .append(tx.getClientId()).append(",")
+                .append(tx.getMerchantId()).append(",")
+                .append(tx.getDate()).append(",")
+                .append(tx.getAmount()).append("\n");
+
+        return sb.toString();
+    }
+
+    public String transactionToCsv(TransactionDto tx) {
+        return transactionToCsv(tx, false);
+    }
+
+    /*
+     * Formats a list of client summary into csv
+     * 
+     * @param summary List containing client summary
+     * 
+     * @return Formatted string in csv
+     */
+    public String clientSummaryToCsv(List<ClientSummaryDto> summary) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("client_id,total,transaction_count,average_transaction\n");
+        for (ClientSummaryDto csd : summary) {
+            sb.append(csd.getClientId()).append(",").append(csd.getTotal()).append(",")
+                    .append(csd.getTransactionCount()).append(",").append(csd.getAverageTransaction()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    /*
+     * Formats a list of merchant summary into csv
+     * 
+     * @param summary List containing merchant summary
+     * 
+     * @return Formatted string in csv
+     */
+    public String merchantSummaryToCsv(List<MerchantSummaryDto> summary) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("merchant_id,city,state,total,transactions\n");
+        for (MerchantSummaryDto csd : summary) {
+            sb.append(csd.getMerchant_id()).append(",").append(csd.getCity()).append(",")
+                    .append(csd.getState()).append(",").append(csd.getTotal()).append(",").append(csd.getTransactions())
+                    .append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Formats a list of state summary into csv
+     * 
+     * @param summary List containing state summary
+     * @return Formatted string in csv
+     */
+    public String stateSummaryToCsv(List<StateSummaryDto> summary) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("merchant_state,total\n");
+        for (StateSummaryDto csd : summary) {
+            sb.append(csd.getMerchantState()).append(",").append(csd.getTotal()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Formats a list of state summary into csv
+     * 
+     * @param summary List containing year summary
+     * @return Formatted string in csv
+     */
+    public String yearSummaryToCsv(List<YearSummaryDto> summary) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("period,average,count,total\n");
+        for (YearSummaryDto csd : summary) {
+            sb.append(csd.getPeriod()).append(",").append(csd.getAverage()).append(",").append(csd.getCount())
+                    .append(",").append(csd.getTotal()).append("\n");
+        }
         return sb.toString();
     }
 }
