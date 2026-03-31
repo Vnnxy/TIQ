@@ -38,3 +38,8 @@ dataset
 .DS_Store
 *.csv
 .env
+
+# Ignore full CSVs but keep sample files
+transactions-data/*.csv
+!transactions-data/merchants.csv
+!transactions-data/transactions.csv
