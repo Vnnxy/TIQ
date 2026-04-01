@@ -4,6 +4,19 @@ A full-stack RESTful web application for managing and analyzing financial transa
 
 ---
 
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="screenshots/average.png" alt="Transactions" width="400"/></td>
+    <td><img src="screenshots/summary.png" alt="Summary" width="400"/></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/summary2.png" alt="Merchants" width="400"/></td>
+    <td><img src="screenshots/clients.png" alt="Average" width="400"/></td>
+  </tr>
+</table>
+
 ## Tech Stack
 
 | Layer | Technology | Reason |
